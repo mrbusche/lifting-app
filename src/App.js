@@ -1,21 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, setDoc, onSnapshot, collection } from 'firebase/firestore';
-
-// Global variables provided by the Canvas environment (for local setup, these would be environment variables or hardcoded for testing)
-// For local development, you might replace these with actual values from your Firebase project
-const appId = 'your-app-id-here'; // Replace with a unique ID for your app, e.g., 'lifting-tracker-v1'
-const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_AUTH_DOMAIN',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_STORAGE_BUCKET',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  appId: 'YOUR_APP_ID',
-  measurementId: 'YOUR_MEASUREMENT_ID', // Optional
-}; // Replace with your actual Firebase project configuration
-const initialAuthToken = null; // For local development, you typically won't have this unless you generate one
 
 // Define the structure and rules for each lifting phase
 const phases = {
@@ -71,12 +54,6 @@ const phases = {
 
 // Main App component
 function App() {
-  // Firebase instances and user ID
-  const [db, setDb] = useState(null);
-  const [auth, setAuth] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [isAuthReady, setIsAuthReady] = useState(false); // To ensure Firestore operations wait for auth
-
   // State to store all exercises and their data
   // exercises: { [exerciseName]: { maxWeight, currentPhaseName, currentSessionIndex, repsCompleted } }
   const [exercises, setExercises] = useState({});
@@ -89,7 +66,6 @@ function App() {
   // State for displaying messages to the user
   const [completionMessage, setCompletionMessage] = useState('');
   const [showCompletionMessage, setShowCompletionMessage] = useState(false);
-  const [loading, setLoading] = useState(true); // Loading state for initial data fetch
 
   // Derived state for the currently selected exercise's data
   const currentExerciseData = selectedExerciseName ? exercises[selectedExerciseName] : null;
@@ -97,107 +73,49 @@ function App() {
   const phaseNames = Object.keys(phases);
   const currentPhaseIndex = currentExerciseData ? phaseNames.indexOf(currentExerciseData.currentPhaseName) : -1;
 
-  // --- Firebase Initialization and Authentication ---
+  // --- Load Exercises from Local Storage on initial mount ---
   useEffect(() => {
     try {
-      const app = initializeApp(firebaseConfig);
-      const authInstance = getAuth(app);
-      const firestoreInstance = getFirestore(app);
-      setAuth(authInstance);
-      setDb(firestoreInstance);
-
-      // Listen for auth state changes
-      const unsubscribe = onAuthStateChanged(authInstance, async (user) => {
-        if (user) {
-          setUserId(user.uid);
-        } else {
-          // Sign in anonymously if no user is logged in
-          try {
-            if (initialAuthToken) {
-              await signInWithCustomToken(authInstance, initialAuthToken);
-            } else {
-              await signInAnonymously(authInstance);
-            }
-          } catch (error) {
-            console.error('Firebase authentication error:', error);
-            setCompletionMessage('Authentication failed. Please try again later.');
-            setShowCompletionMessage(true);
+      const storedExercises = localStorage.getItem('liftingTrackerExercises');
+      if (storedExercises) {
+        const parsedExercises = JSON.parse(storedExercises);
+        // Ensure repsCompleted arrays are parsed back from JSON strings
+        for (const key in parsedExercises) {
+          if (parsedExercises[key].repsCompleted && typeof parsedExercises[key].repsCompleted === 'string') {
+            parsedExercises[key].repsCompleted = JSON.parse(parsedExercises[key].repsCompleted);
           }
         }
-        setIsAuthReady(true); // Auth is ready, can now perform Firestore operations
-      });
-
-      return () => unsubscribe(); // Cleanup auth listener on unmount
+        setExercises(parsedExercises);
+        // If no exercise is selected, select the first one if available
+        if (!selectedExerciseName && Object.keys(parsedExercises).length > 0) {
+          setSelectedExerciseName(Object.keys(parsedExercises)[0]);
+        }
+      }
     } catch (error) {
-      console.error('Firebase initialization error:', error);
-      setCompletionMessage('Failed to initialize the application. Please check console for details.');
+      console.error('Error loading exercises from local storage:', error);
+      setCompletionMessage('Failed to load saved exercises. Local storage might be corrupted.');
       setShowCompletionMessage(true);
-      setLoading(false);
     }
   }, []); // Run once on component mount
 
-  // --- Load Exercises from Firestore ---
+  // --- Save Exercises to Local Storage whenever 'exercises' state changes ---
   useEffect(() => {
-    if (db && userId && isAuthReady) {
-      setLoading(true);
-      const userExercisesRef = collection(db, `artifacts/${appId}/users/${userId}/exercises`);
-
-      const unsubscribe = onSnapshot(
-        userExercisesRef,
-        (snapshot) => {
-          const loadedExercises = {};
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            // Parse repsCompleted if it was stored as a JSON string
-            if (data.repsCompleted && typeof data.repsCompleted === 'string') {
-              try {
-                data.repsCompleted = JSON.parse(data.repsCompleted);
-              } catch (e) {
-                console.error('Error parsing repsCompleted:', e);
-                data.repsCompleted = []; // Fallback to empty array
-              }
-            }
-            loadedExercises[doc.id] = data;
-          });
-          setExercises(loadedExercises);
-          setLoading(false);
-          // If no exercise is selected, select the first one if available
-          if (!selectedExerciseName && Object.keys(loadedExercises).length > 0) {
-            setSelectedExerciseName(Object.keys(loadedExercises)[0]);
-          }
-        },
-        (error) => {
-          console.error('Error fetching exercises:', error);
-          setCompletionMessage('Failed to load exercises. Please try refreshing.');
-          setShowCompletionMessage(true);
-          setLoading(false);
-        },
-      );
-
-      return () => unsubscribe(); // Cleanup snapshot listener
+    try {
+      // Prepare data for saving: stringify repsCompleted arrays
+      const exercisesToSave = {};
+      for (const key in exercises) {
+        exercisesToSave[key] = {
+          ...exercises[key],
+          repsCompleted: JSON.stringify(exercises[key].repsCompleted),
+        };
+      }
+      localStorage.setItem('liftingTrackerExercises', JSON.stringify(exercisesToSave));
+    } catch (error) {
+      console.error('Error saving exercises to local storage:', error);
+      setCompletionMessage('Failed to save progress. Local storage might be full or inaccessible.');
+      setShowCompletionMessage(true);
     }
-  }, [db, userId, isAuthReady, selectedExerciseName]); // Re-run when db, userId, or authReady changes
-
-  // --- Save Exercises to Firestore whenever 'exercises' state changes ---
-  useEffect(() => {
-    if (db && userId && isAuthReady) {
-      Object.entries(exercises).forEach(async ([exerciseName, data]) => {
-        const exerciseDocRef = doc(db, `artifacts/${appId}/users/${userId}/exercises`, exerciseName);
-        try {
-          // Serialize repsCompleted array to JSON string before saving
-          const dataToSave = {
-            ...data,
-            repsCompleted: JSON.stringify(data.repsCompleted),
-          };
-          await setDoc(exerciseDocRef, dataToSave, { merge: true });
-        } catch (error) {
-          console.error(`Error saving exercise ${exerciseName}:`, error);
-          setCompletionMessage(`Failed to save progress for ${exerciseName}.`);
-          setShowCompletionMessage(true);
-        }
-      });
-    }
-  }, [exercises, db, userId, isAuthReady]); // Save whenever exercises state changes
+  }, [exercises]); // Save whenever exercises state changes
 
   // Effect to initialize repsCompleted when the selected exercise or its phase/session changes
   useEffect(() => {
@@ -222,13 +140,7 @@ function App() {
   }, [currentPhase, currentExerciseData?.currentSessionIndex, selectedExerciseName]);
 
   // Function to handle adding a new exercise
-  const handleAddExercise = async () => {
-    if (!db || !userId) {
-      setCompletionMessage('Application not ready. Please wait for initialization.');
-      setShowCompletionMessage(true);
-      return;
-    }
-
+  const handleAddExercise = () => {
     const weight = parseFloat(newExerciseMaxWeight);
     if (!newExerciseName.trim()) {
       setCompletionMessage('Please enter a name for the exercise.');
@@ -250,30 +162,18 @@ function App() {
       maxWeight: weight,
       currentPhaseName: 'Base Phase',
       currentSessionIndex: 0,
-      repsCompleted: JSON.stringify(Array(phases['Base Phase'].sets).fill('')), // Store as JSON string
+      repsCompleted: Array(phases['Base Phase'].sets).fill(''), // Stored as array in state
     };
 
-    try {
-      const exerciseDocRef = doc(db, `artifacts/${appId}/users/${userId}/exercises`, newExerciseName.trim());
-      await setDoc(exerciseDocRef, newExerciseData);
-
-      setExercises((prevExercises) => ({
-        ...prevExercises,
-        [newExerciseName.trim()]: {
-          ...newExerciseData,
-          repsCompleted: Array(phases['Base Phase'].sets).fill(''), // Keep as array in state
-        },
-      }));
-      setSelectedExerciseName(newExerciseName.trim());
-      setNewExerciseName('');
-      setNewExerciseMaxWeight('');
-      setCompletionMessage('Exercise added successfully!');
-      setShowCompletionMessage(true);
-    } catch (error) {
-      console.error('Error adding exercise:', error);
-      setCompletionMessage('Failed to add exercise. Please try again.');
-      setShowCompletionMessage(true);
-    }
+    setExercises((prevExercises) => ({
+      ...prevExercises,
+      [newExerciseName.trim()]: newExerciseData,
+    }));
+    setSelectedExerciseName(newExerciseName.trim());
+    setNewExerciseName('');
+    setNewExerciseMaxWeight('');
+    setCompletionMessage('Exercise added successfully!');
+    setShowCompletionMessage(true);
   };
 
   // Function to calculate the target weight for a given percentage, rounded to the nearest 5 lbs
@@ -418,30 +318,12 @@ function App() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 text-white font-inter flex flex-col items-center justify-center p-4">
-        <div className="text-2xl font-semibold text-purple-400">Loading your lifting program...</div>
-        <div className="mt-4 text-gray-400">Please ensure Firebase is configured correctly.</div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 text-white font-inter flex flex-col items-center p-4 sm:p-6 md:p-8">
       <div className="bg-gray-800 rounded-xl shadow-2xl p-6 sm:p-8 md:p-10 w-full max-w-4xl flex flex-col items-center">
         <h1 className="text-4xl sm:text-5xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-center">
           Lifting Program Tracker
         </h1>
-
-        {/* User ID Display */}
-        {userId && (
-          <div className="bg-gray-700 rounded-lg p-3 mb-6 w-full text-center shadow-inner">
-            <p className="text-sm font-medium text-gray-300">
-              Your User ID: <span className="text-yellow-400 break-all">{userId}</span>
-            </p>
-          </div>
-        )}
 
         {/* Exercise Management Section */}
         <div className="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
