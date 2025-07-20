@@ -339,6 +339,17 @@
     };
     reader.readAsText(file);
   }
+
+  // Function to reset all data with confirmation
+  function resetAllData() {
+    if (confirm('Are you sure you want to reset all exercises and clear all saved data? This cannot be undone.')) {
+      exercises = {};
+      selectedExerciseName = null;
+      localStorage.removeItem('liftingTrackerExercises');
+      completionMessage = 'All data has been reset.';
+      showCompletionMessage = true;
+    }
+  }
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 text-white font-inter flex flex-col items-center p-4 sm:p-6 md:p-8">
@@ -508,7 +519,7 @@
       </div>
     {/if}
 
-    <!-- Export/Import Section -->
+    <!-- Export/Import/Reset Section -->
     <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
       <h2 class="text-2xl font-bold text-yellow-300 mb-4 text-center">Export/Import Exercises</h2>
       <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
@@ -525,6 +536,12 @@
         >
           Import Exercises
         </label>
+        <button
+          on:click={resetAllData}
+          class="px-6 py-3 bg-gradient-to-r from-red-500 to-orange-600 text-white font-semibold rounded-lg shadow-lg hover:from-red-600 hover:to-orange-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
+        >
+          Reset All Data
+        </button>
       </div>
     </div>
   </div>
