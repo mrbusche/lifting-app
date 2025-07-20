@@ -79,21 +79,17 @@
           const parsedExercises = JSON.parse(storedExercises);
           for (const key in parsedExercises) {
             const exercise = parsedExercises[key];
-            // Ensure repsCompleted arrays are parsed back from JSON strings
-            if (exercise.repsCompleted && typeof exercise.repsCompleted === 'string') {
-              exercise.repsCompleted = JSON.parse(exercise.repsCompleted);
-            } else {
-              // If it's not a string or missing, ensure it's an array
-              exercise.repsCompleted = exercise.repsCompleted || [];
+            // Ensure repsCompleted is always an array
+            if (!Array.isArray(exercise.repsCompleted)) {
+              exercise.repsCompleted = [];
             }
-
-            // Now, ensure repsCompleted has the correct length for its current phase
+            // Ensure correct length for current phase
             const phase = phases[exercise.currentPhaseName];
             if (phase && exercise.repsCompleted.length !== phase.sets) {
               exercise.repsCompleted = Array(phase.sets).fill('');
             }
           }
-          exercises = parsedExercises; // Directly assign to make it reactive
+          exercises = parsedExercises;
           // Set selectedExerciseName after exercises are loaded
           if (!selectedExerciseName && Object.keys(exercises).length > 0) {
             selectedExerciseName = Object.keys(exercises)[0];
@@ -113,15 +109,18 @@
     if (browser) {
       // Only run in the browser
       try {
-        // Prepare data for saving: stringify repsCompleted arrays
-        const exercisesToSave = {};
-        for (const key in exercises) {
-          exercisesToSave[key] = {
-            ...exercises[key],
-            repsCompleted: JSON.stringify(exercises[key].repsCompleted),
-          };
+        if (Object.keys(exercises).length > 0) {
+          // Prepare data for saving: stringify repsCompleted arrays
+          const exercisesToSave = {};
+          for (const key in exercises) {
+            exercisesToSave[key] = {
+              ...exercises[key],
+              repsCompleted: JSON.stringify(exercises[key].repsCompleted),
+            };
+          }
+          console.log('Exercises to save:', exercisesToSave);
+          localStorage.setItem('liftingTrackerExercises', JSON.stringify(exercisesToSave));
         }
-        localStorage.setItem('liftingTrackerExercises', JSON.stringify(exercisesToSave));
       } catch (error) {
         console.error('Error saving exercises to local storage:', error);
         completionMessage = 'Failed to save progress. Local storage might be full or inaccessible.';
@@ -322,6 +321,16 @@
     reader.onload = (e) => {
       try {
         const imported = JSON.parse(e.target.result);
+        for (const key in imported) {
+          const exercise = imported[key];
+          if (!Array.isArray(exercise.repsCompleted)) {
+            exercise.repsCompleted = [];
+          }
+          const phase = phases[exercise.currentPhaseName];
+          if (phase && exercise.repsCompleted.length !== phase.sets) {
+            exercise.repsCompleted = Array(phase.sets).fill('');
+          }
+        }
         exercises = imported;
         localStorage.setItem('liftingTrackerExercises', JSON.stringify(imported));
       } catch (err) {
