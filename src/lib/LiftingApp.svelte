@@ -298,10 +298,10 @@
   }
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 text-white font-inter flex flex-col items-center p-4 sm:p-6 md:p-8">
+<div class="min-h-screen bg-linear-to-br from-gray-900 to-gray-700 text-white font-inter flex flex-col items-center p-4 sm:p-6 md:p-8">
   <div class="bg-gray-800 rounded-xl shadow-2xl p-6 sm:p-8 md:p-10 w-full max-w-4xl flex flex-col items-center">
     <h1
-      class="text-4xl sm:text-5xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-center"
+      class="text-4xl sm:text-5xl font-extrabold mb-6 text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-pink-600 text-center"
     >
       Lifting Program Tracker
     </h1>
@@ -316,17 +316,17 @@
           type="text"
           bind:value={newExerciseName}
           placeholder="New Exercise Name (e.g., Bench Press)"
-          class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/2"
+          class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-hidden focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/2"
         />
         <input
           type="number"
           bind:value={newExerciseMaxWeight}
           placeholder="Initial Max Weight (lbs)"
-          class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
+          class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-hidden focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
         />
         <button
           on:click={handleAddExercise}
-          class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
+          class="px-6 py-3 bg-linear-to-r from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
         >
           Add Exercise
         </button>
@@ -339,7 +339,7 @@
           <select
             id="exercise-select"
             bind:value={selectedExerciseName}
-            class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-hidden focus:ring-2 focus:ring-yellow-500"
           >
             <option value={null} disabled>-- Choose an Exercise --</option>
             {#each Object.keys(exercises) as name}
@@ -423,14 +423,14 @@
                 type="number"
                 bind:value={currentExerciseData.repsCompleted[index]}
                 placeholder="Reps done"
-                class="p-2 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 w-24 text-center"
+                class="p-2 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-hidden focus:ring-2 focus:ring-green-500 w-24 text-center"
               />
             </div>
           {/each}
         </div>
         <button
           on:click={completeSession}
-          class="mt-8 px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-indigo-600 hover:to-purple-700 transition duration-300 ease-in-out transform hover:scale-105 w-full"
+          class="mt-8 px-8 py-3 bg-linear-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-indigo-600 hover:to-purple-700 transition duration-300 ease-in-out transform hover:scale-105 w-full"
         >
           Complete Session
         </button>
@@ -442,7 +442,7 @@
           on:click={goToPreviousPhase}
           disabled={currentPhaseIndex === 0}
           class={`px-6 py-3 rounded-lg font-semibold shadow-lg transition duration-300 ease-in-out transform hover:scale-105
-            ${currentPhaseIndex === 0 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700'}`}
+            ${currentPhaseIndex === 0 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-linear-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700'}`}
         >
           Previous Phase
         </button>
@@ -450,7 +450,7 @@
           on:click={goToNextPhase}
           disabled={currentPhaseIndex === phaseNames.length - 1 && currentExerciseData.currentSessionIndex === currentPhase.sessions - 1}
           class={`px-6 py-3 rounded-lg font-semibold shadow-lg transition duration-300 ease-in-out transform hover:scale-105
-            ${currentPhaseIndex === phaseNames.length - 1 && currentExerciseData.currentSessionIndex === currentPhase.sessions - 1 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white hover:from-blue-600 hover:to-cyan-700'}`}
+            ${currentPhaseIndex === phaseNames.length - 1 && currentExerciseData.currentSessionIndex === currentPhase.sessions - 1 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-linear-to-r from-blue-500 to-cyan-600 text-white hover:from-blue-600 hover:to-cyan-700'}`}
         >
           Next Phase
         </button>
