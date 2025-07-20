@@ -300,6 +300,36 @@
       showCompletionMessage = true;
     }
   }
+
+  // --- Export and Import Functions ---
+  // Export exercises as JSON file
+  function exportExercises() {
+    const dataStr = JSON.stringify(exercises, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'liftingTrackerExercises.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Import exercises from JSON file
+  function importExercises(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target.result);
+        exercises = imported;
+        localStorage.setItem('liftingTrackerExercises', JSON.stringify(imported));
+      } catch (err) {
+        alert('Invalid JSON file');
+      }
+    };
+    reader.readAsText(file);
+  }
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 text-white font-inter flex flex-col items-center p-4 sm:p-6 md:p-8">
@@ -468,5 +498,25 @@
         {/if}
       </div>
     {/if}
+
+    <!-- Export/Import Section -->
+    <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
+      <h2 class="text-2xl font-bold text-yellow-300 mb-4 text-center">Export/Import Exercises</h2>
+      <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+        <button
+          on:click={exportExercises}
+          class="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-cyan-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
+        >
+          Export Exercises
+        </button>
+        <input type="file" accept="application/json" on:change={importExercises} class="hidden" id="import-exercises" />
+        <label
+          for="import-exercises"
+          class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto text-center cursor-pointer"
+        >
+          Import Exercises
+        </label>
+      </div>
+    </div>
   </div>
 </div>
