@@ -1,0 +1,100 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'skip ci') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get version from commit
+        id: version
+        run: |
+          # Extract version from semantic commit message
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+
+          # Extract the type and scope
+          TYPE=$(echo "$COMMIT_MSG" | sed -E 's/^([a-z]+)(\([^)]+\))?:.*/\1/')
+          SCOPE=$(echo "$COMMIT_MSG" | sed -E 's/^[a-z]+\(([^)]+)\):.*/\1/' | sed 's/^$//')
+
+          # Get current version from package.json
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+          # Determine new version based on type
+          if [[ "$TYPE" == "feat" ]]; then
+            # Minor version bump for features
+            NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2+1".0"}')
+          elif [[ "$TYPE" == "fix" ]]; then
+            # Patch version bump for fixes
+            NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."$3+1"}')
+          else
+            # For other types, use patch bump
+            NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."$3+1"}')
+          fi
+
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+          echo "scope=$SCOPE" >> $GITHUB_OUTPUT
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "should_release=true" >> $GITHUB_OUTPUT
+
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.new_version }}
+          release_name: Release v${{ steps.version.outputs.new_version }}
+          body: |
+            ## What's Changed
+
+            **Type:** ${{ steps.version.outputs.type }}
+            **Scope:** ${{ steps.version.outputs.scope }}
+
+            ### Commit Message
+            ```
+            ${{ github.event.head_commit.message }}
+            ```
+
+            ### Changes
+            - ${{ github.event.head_commit.message }}
+
+            ---
+
+            *This release was automatically created by GitHub Actions.*
+          draft: false
+          prerelease: false
+
+      - name: Update package.json version
+        run: |
+          # Update version in package.json
+          npm version ${{ steps.version.outputs.new_version }} --no-git-tag-version
+
+          # Commit and push the version update
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.new_version }}"
+          git push
+
+      - name: Create Git tag
+        run: |
+          git tag -a v${{ steps.version.outputs.new_version }} -m "Release v${{ steps.version.outputs.new_version }}"
+          git push origin v${{ steps.version.outputs.new_version }}
