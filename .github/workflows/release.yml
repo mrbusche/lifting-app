@@ -44,10 +44,10 @@ jobs:
             NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2+1".0"}')
           elif [[ "$TYPE" == "fix" ]]; then
             # Patch version bump for fixes
-            NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."$3+1"}')
+            NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."$3+1}')
           else
             # For other types, use patch bump
-            NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."$3+1"}')
+            NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1"."$2"."$3+1}')
           fi
 
           echo "type=$TYPE" >> $GITHUB_OUTPUT
