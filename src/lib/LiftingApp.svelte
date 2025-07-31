@@ -69,6 +69,14 @@
   $: phaseNames = Object.keys(phases);
   $: currentPhaseIndex = currentExerciseData ? phaseNames.indexOf(currentExerciseData.currentPhaseName) : -1;
 
+  // Reactive calculation of target weights for the current exercise and phase
+  $: targetWeights = currentPhase && currentExerciseData
+    ? currentPhase.percentages.map(pct => {
+        const rawWeight = currentExerciseData.maxWeight * (pct / 100);
+        return Math.round(rawWeight / 5) * 5;
+      })
+    : [];
+
   // --- Load Exercises from Local Storage on initial mount ---
   onMount(() => {
     if (browser) {
@@ -168,9 +176,9 @@
 
   // Function to calculate the target weight for a given percentage, rounded to the nearest 5 lbs
   function calculateWeight(percentage) {
-    if (!currentExerciseData) return 0;
-    const rawWeight = currentExerciseData.maxWeight * (percentage / 100);
-    // Round to the nearest 5 pounds
+    const exercise = exercises[selectedExerciseName];
+    if (!exercise) return 0;
+    const rawWeight = exercise.maxWeight * (percentage / 100);
     return Math.round(rawWeight / 5) * 5;
   }
 
@@ -250,54 +258,6 @@
       ...exercises,
       [selectedExerciseName]: updatedExercise,
     };
-  }
-
-  // Function to move to the next phase
-  function goToNextPhase() {
-    if (!selectedExerciseName || !currentExerciseData) return;
-
-    const nextPhaseIndex = currentPhaseIndex + 1;
-    if (nextPhaseIndex < phaseNames.length) {
-      // Update the exercises object immutably to trigger reactivity
-      exercises = {
-        ...exercises,
-        [selectedExerciseName]: {
-          ...exercises[selectedExerciseName],
-          currentPhaseName: phaseNames[nextPhaseIndex],
-          currentSessionIndex: 0, // Reset session index for the new phase
-          repsCompleted: Array(phases[phaseNames[nextPhaseIndex]].sets).fill(''), // Reset reps for new phase
-        },
-      };
-      completionMessage = ''; // Clear messages
-      showCompletionMessage = false;
-    } else {
-      completionMessage = 'Congratulations! You have completed all phases of the program for this exercise!';
-      showCompletionMessage = true;
-    }
-  }
-
-  // Function to go back to the previous phase
-  function goToPreviousPhase() {
-    if (!selectedExerciseName || !currentExerciseData) return;
-
-    const prevPhaseIndex = currentPhaseIndex - 1;
-    if (prevPhaseIndex >= 0) {
-      // Update the exercises object immutably to trigger reactivity
-      exercises = {
-        ...exercises,
-        [selectedExerciseName]: {
-          ...exercises[selectedExerciseName],
-          currentPhaseName: phaseNames[prevPhaseIndex],
-          currentSessionIndex: 0, // Reset session index for the new phase
-          repsCompleted: Array(phases[phaseNames[prevPhaseIndex]].sets).fill(''), // Reset reps for new phase
-        },
-      };
-      completionMessage = ''; // Clear messages
-      showCompletionMessage = false;
-    } else {
-      completionMessage = 'You are already in the first phase for this exercise.';
-      showCompletionMessage = true;
-    }
   }
 
   // --- Export and Import Functions ---
@@ -406,8 +366,15 @@
 
     <!-- Completion Message Display -->
     {#if showCompletionMessage}
-      <div class="bg-blue-600 bg-opacity-30 border border-blue-500 rounded-lg p-4 mb-6 w-full text-center shadow-md">
-        <p class="text-lg font-medium">{completionMessage}</p>
+      <div class="bg-blue-600 bg-opacity-30 border border-blue-500 rounded-lg p-4 mb-6 w-full text-center shadow-md relative">
+        <button
+          on:click={() => showCompletionMessage = false}
+          class="absolute top-2 right-2 text-blue-200 hover:text-white text-xl font-bold transition-colors duration-200"
+          aria-label="Close message"
+        >
+          ×
+        </button>
+        <p class="text-lg font-medium pr-8">{completionMessage}</p>
       </div>
     {/if}
 
@@ -442,7 +409,7 @@
             <p>Percentages of Max:</p>
             <ul class="list-disc list-inside ml-4">
               {#each currentPhase.percentages as pct, index}
-                <li>Set {index + 1}: {pct}% (Target: {calculateWeight(pct)} lbs)</li>
+                <li>Set {index + 1}: {pct}% (Target: {targetWeights[index]} lbs)</li>
               {/each}
             </ul>
           </div>
@@ -490,25 +457,6 @@
         </button>
       </div>
 
-      <!-- Navigation Buttons -->
-      <div class="flex flex-wrap justify-center gap-4 w-full">
-        <button
-          on:click={goToPreviousPhase}
-          disabled={currentPhaseIndex === 0}
-          class={`px-6 py-3 rounded-lg font-semibold shadow-lg transition duration-300 ease-in-out transform hover:scale-105
-            ${currentPhaseIndex === 0 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700'}`}
-        >
-          Previous Phase
-        </button>
-        <button
-          on:click={goToNextPhase}
-          disabled={currentPhaseIndex === phaseNames.length - 1 && currentExerciseData.currentSessionIndex === currentPhase.sessions - 1}
-          class={`px-6 py-3 rounded-lg font-semibold shadow-lg transition duration-300 ease-in-out transform hover:scale-105
-            ${currentPhaseIndex === phaseNames.length - 1 && currentExerciseData.currentSessionIndex === currentPhase.sessions - 1 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white hover:from-blue-600 hover:to-cyan-700'}`}
-        >
-          Next Phase
-        </button>
-      </div>
     {:else}
       <div class="text-center text-lg text-gray-300">
         {#if Object.keys(exercises).length === 0}
