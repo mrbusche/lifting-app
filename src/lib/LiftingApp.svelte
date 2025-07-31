@@ -260,54 +260,6 @@
     };
   }
 
-  // Function to move to the next phase
-  function goToNextPhase() {
-    if (!selectedExerciseName || !currentExerciseData) return;
-
-    const nextPhaseIndex = currentPhaseIndex + 1;
-    if (nextPhaseIndex < phaseNames.length) {
-      // Update the exercises object immutably to trigger reactivity
-      exercises = {
-        ...exercises,
-        [selectedExerciseName]: {
-          ...exercises[selectedExerciseName],
-          currentPhaseName: phaseNames[nextPhaseIndex],
-          currentSessionIndex: 0, // Reset session index for the new phase
-          repsCompleted: Array(phases[phaseNames[nextPhaseIndex]].sets).fill(''), // Reset reps for new phase
-        },
-      };
-      completionMessage = ''; // Clear messages
-      showCompletionMessage = false;
-    } else {
-      completionMessage = 'Congratulations! You have completed all phases of the program for this exercise!';
-      showCompletionMessage = true;
-    }
-  }
-
-  // Function to go back to the previous phase
-  function goToPreviousPhase() {
-    if (!selectedExerciseName || !currentExerciseData) return;
-
-    const prevPhaseIndex = currentPhaseIndex - 1;
-    if (prevPhaseIndex >= 0) {
-      // Update the exercises object immutably to trigger reactivity
-      exercises = {
-        ...exercises,
-        [selectedExerciseName]: {
-          ...exercises[selectedExerciseName],
-          currentPhaseName: phaseNames[prevPhaseIndex],
-          currentSessionIndex: 0, // Reset session index for the new phase
-          repsCompleted: Array(phases[phaseNames[prevPhaseIndex]].sets).fill(''), // Reset reps for new phase
-        },
-      };
-      completionMessage = ''; // Clear messages
-      showCompletionMessage = false;
-    } else {
-      completionMessage = 'You are already in the first phase for this exercise.';
-      showCompletionMessage = true;
-    }
-  }
-
   // --- Export and Import Functions ---
   // Export exercises as JSON file
   function exportExercises() {
@@ -505,25 +457,6 @@
         </button>
       </div>
 
-      <!-- Navigation Buttons -->
-      <div class="flex flex-wrap justify-center gap-4 w-full">
-        <button
-          on:click={goToPreviousPhase}
-          disabled={currentPhaseIndex === 0}
-          class={`px-6 py-3 rounded-lg font-semibold shadow-lg transition duration-300 ease-in-out transform hover:scale-105
-            ${currentPhaseIndex === 0 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700'}`}
-        >
-          Previous Phase
-        </button>
-        <button
-          on:click={goToNextPhase}
-          disabled={currentPhaseIndex === phaseNames.length - 1 && currentExerciseData.currentSessionIndex === currentPhase.sessions - 1}
-          class={`px-6 py-3 rounded-lg font-semibold shadow-lg transition duration-300 ease-in-out transform hover:scale-105
-            ${currentPhaseIndex === phaseNames.length - 1 && currentExerciseData.currentSessionIndex === currentPhase.sessions - 1 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white hover:from-blue-600 hover:to-cyan-700'}`}
-        >
-          Next Phase
-        </button>
-      </div>
     {:else}
       <div class="text-center text-lg text-gray-300">
         {#if Object.keys(exercises).length === 0}
