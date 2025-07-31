@@ -414,8 +414,15 @@
 
     <!-- Completion Message Display -->
     {#if showCompletionMessage}
-      <div class="bg-blue-600 bg-opacity-30 border border-blue-500 rounded-lg p-4 mb-6 w-full text-center shadow-md">
-        <p class="text-lg font-medium">{completionMessage}</p>
+      <div class="bg-blue-600 bg-opacity-30 border border-blue-500 rounded-lg p-4 mb-6 w-full text-center shadow-md relative">
+        <button
+          on:click={() => showCompletionMessage = false}
+          class="absolute top-2 right-2 text-blue-200 hover:text-white text-xl font-bold transition-colors duration-200"
+          aria-label="Close message"
+        >
+          ×
+        </button>
+        <p class="text-lg font-medium pr-8">{completionMessage}</p>
       </div>
     {/if}
 
