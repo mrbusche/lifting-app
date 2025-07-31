@@ -17,6 +17,7 @@ type(scope): description
 ```
 
 **Types:**
+
 - `feat`: New features (minor version bump)
 - `fix`: Bug fixes (patch version bump)
 - `docs`: Documentation changes
@@ -29,6 +30,7 @@ type(scope): description
 - `chore`: Maintenance tasks
 
 **Examples:**
+
 - `feat: add new exercise tracking feature`
 - `fix(auth): resolve login issue`
 - `docs: update README with new instructions`
