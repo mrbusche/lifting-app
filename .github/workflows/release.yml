@@ -80,10 +80,6 @@ jobs:
 
             ### Changes
             - ${{ github.event.head_commit.message }}
-
-            ---
-
-            *This release was automatically created by GitHub Actions.*
           draft: false
           prerelease: false
 
