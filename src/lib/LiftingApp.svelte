@@ -69,6 +69,14 @@
   $: phaseNames = Object.keys(phases);
   $: currentPhaseIndex = currentExerciseData ? phaseNames.indexOf(currentExerciseData.currentPhaseName) : -1;
 
+  // Reactive calculation of target weights for the current exercise and phase
+  $: targetWeights = currentPhase && currentExerciseData
+    ? currentPhase.percentages.map(pct => {
+        const rawWeight = currentExerciseData.maxWeight * (pct / 100);
+        return Math.round(rawWeight / 5) * 5;
+      })
+    : [];
+
   // --- Load Exercises from Local Storage on initial mount ---
   onMount(() => {
     if (browser) {
@@ -168,9 +176,9 @@
 
   // Function to calculate the target weight for a given percentage, rounded to the nearest 5 lbs
   function calculateWeight(percentage) {
-    if (!currentExerciseData) return 0;
-    const rawWeight = currentExerciseData.maxWeight * (percentage / 100);
-    // Round to the nearest 5 pounds
+    const exercise = exercises[selectedExerciseName];
+    if (!exercise) return 0;
+    const rawWeight = exercise.maxWeight * (percentage / 100);
     return Math.round(rawWeight / 5) * 5;
   }
 
@@ -442,7 +450,7 @@
             <p>Percentages of Max:</p>
             <ul class="list-disc list-inside ml-4">
               {#each currentPhase.percentages as pct, index}
-                <li>Set {index + 1}: {pct}% (Target: {calculateWeight(pct)} lbs)</li>
+                <li>Set {index + 1}: {pct}% (Target: {targetWeights[index]} lbs)</li>
               {/each}
             </ul>
           </div>
