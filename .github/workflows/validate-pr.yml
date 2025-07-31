@@ -1,4 +1,4 @@
-name: Prettier Fix
+name: Validate PR
 
 on:
   pull_request:
