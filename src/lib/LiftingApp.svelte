@@ -242,16 +242,28 @@
 
     // Determine if phase or session changes
     if (updatedExercise.currentSessionIndex === currentPhase.sessions - 1) {
-      completionMessage = `Phase "${updatedExercise.currentPhaseName}" completed for ${selectedExerciseName}! Your new max weight for the next phase is ${newMaxWeight} lbs.`;
+      // Phase completed - advance to next phase if available
+      const nextPhaseIndex = currentPhaseIndex + 1;
+      if (nextPhaseIndex < phaseNames.length) {
+        const nextPhaseName = phaseNames[nextPhaseIndex];
+        const nextPhase = phases[nextPhaseName];
+        updatedExercise.currentPhaseName = nextPhaseName;
+        updatedExercise.currentSessionIndex = 0;
+        updatedExercise.repsCompleted = Array(nextPhase.sets).fill('');
+        completionMessage = `Phase "${currentExerciseData.currentPhaseName}" completed for ${selectedExerciseName}! Moving to "${nextPhaseName}". Your new max weight is ${newMaxWeight} lbs.`;
+      } else {
+        // All phases completed - restart the current (final) phase
+        updatedExercise.currentSessionIndex = 0;
+        updatedExercise.repsCompleted = Array(currentPhase.sets).fill('');
+        completionMessage = `Congratulations! All phases completed for ${selectedExerciseName}! Your final max weight is ${newMaxWeight} lbs. Restarting "${currentExerciseData.currentPhaseName}".`;
+      }
       showCompletionMessage = true;
-      updatedExercise.currentSessionIndex = 0; // Reset session index for the next phase
     } else {
       completionMessage = `Session ${updatedExercise.currentSessionIndex + 1} completed for ${selectedExerciseName}! Your new max weight for the next session is ${newMaxWeight} lbs.`;
       showCompletionMessage = true;
       updatedExercise.currentSessionIndex += 1; // Move to the next session
+      updatedExercise.repsCompleted = Array(currentPhase.sets).fill('');
     }
-    // Reset reps completed for the next session/phase explicitly
-    updatedExercise.repsCompleted = Array(currentPhase.sets).fill('');
 
     // Update the exercises object immutably to trigger reactivity
     exercises = {
