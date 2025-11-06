@@ -10,8 +10,8 @@
       percentages: [65, 70, 75],
       sessions: 4,
       progression: [
+        { repsRange: [0, 7], change: -5, text: '0-7 reps: Decrease 5 pounds' },
         { repsRange: [8, 9], change: 0, text: '8-9 reps: No change' },
-        { repsRange: [6, 7], change: -5, text: '6-7 reps: Decrease 5 pounds' },
         { repsRange: [10, 11], change: 5, text: '10-11 reps: Increase 5 pounds' },
         { repsRange: [12, Infinity], change: 10, text: '12+ reps: Increase 10 pounds' },
       ],
@@ -22,8 +22,8 @@
       percentages: [60, 70, 75, 80],
       sessions: 4,
       progression: [
+        { repsRange: [0, 6], change: -5, text: '0-6 reps: Decrease 5 pounds' },
         { repsRange: [7, 7], change: 0, text: '7 reps: No change' },
-        { repsRange: [5, 6], change: -5, text: '5-6 reps: Decrease 5 pounds' },
         { repsRange: [8, 9], change: 5, text: '8-9 reps: Increase 5 pounds' },
         { repsRange: [10, Infinity], change: 10, text: '10+ reps: Increase 10 pounds' },
       ],
@@ -34,8 +34,8 @@
       percentages: [65, 70, 75, 80, 85],
       sessions: 4,
       progression: [
+        { repsRange: [0, 4], change: -5, text: '0-4 reps: Decrease 5 pounds' },
         { repsRange: [5, 5], change: 0, text: '5 reps: No change' },
-        { repsRange: [3, 4], change: -5, text: '3-4 reps: Decrease 5 pounds' },
         { repsRange: [6, 7], change: 5, text: '6-7 reps: Increase 5 pounds' },
         { repsRange: [8, Infinity], change: 10, text: '8+ reps: Increase 10 pounds' },
       ],
@@ -46,8 +46,8 @@
       percentages: [50, 60, 70, 80, 85, 90], // Specific percentages for each set
       sessions: 6,
       progression: [
+        { repsRange: [0, 1], change: -5, text: '0-1 reps: Decrease 5 pounds' },
         { repsRange: [2, 2], change: 0, text: '2 reps: No change' },
-        { repsRange: [1, 1], change: -5, text: '1 rep: Decrease 5 pounds' },
         { repsRange: [3, 3], change: 5, text: '3 reps: Increase 5 pounds' },
         { repsRange: [4, Infinity], change: 10, text: '4+ reps: Increase 10 pounds' },
       ],
