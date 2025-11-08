@@ -61,6 +61,8 @@
   let newExerciseMaxWeight = '';
   let completionMessage = '';
   let showCompletionMessage = false;
+  let isManageExercisesExpanded = false;
+  let isExportImportExpanded = false;
 
   // Derived state: These reactive declarations only read from other state variables,
   // ensuring they don't cause circular updates.
@@ -334,31 +336,42 @@
 
     <!-- Exercise Management Section -->
     <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
-      <h2 class="text-2xl font-bold text-yellow-300 mb-4 text-center">Manage Exercises</h2>
-
-      <!-- Add New Exercise -->
-      <div class="flex flex-col sm:flex-row gap-4 mb-6 items-center justify-center">
-        <input
-          type="text"
-          bind:value={newExerciseName}
-          placeholder="New Exercise Name (e.g., Bench Press)"
-          class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/2"
-        />
-        <input
-          type="number"
-          bind:value={newExerciseMaxWeight}
-          placeholder="Initial Max Weight (lbs)"
-          class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
-        />
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold text-yellow-300 text-center flex-1">Manage Exercises</h2>
         <button
-          on:click={handleAddExercise}
-          class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
+          on:click={() => (isManageExercisesExpanded = !isManageExercisesExpanded)}
+          class="text-yellow-300 hover:text-yellow-400 font-bold text-2xl focus:outline-none"
+          aria-label={isManageExercisesExpanded ? 'Collapse' : 'Expand'}
         >
-          Add Exercise
+          {isManageExercisesExpanded ? '−' : '+'}
         </button>
       </div>
 
-      <!-- Select Existing Exercise -->
+      <!-- Add New Exercise (Collapsible) -->
+      {#if isManageExercisesExpanded}
+        <div class="flex flex-col sm:flex-row gap-4 mb-6 items-center justify-center">
+          <input
+            type="text"
+            bind:value={newExerciseName}
+            placeholder="New Exercise Name (e.g., Bench Press)"
+            class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/2"
+          />
+          <input
+            type="number"
+            bind:value={newExerciseMaxWeight}
+            placeholder="Initial Max Weight (lbs)"
+            class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
+          />
+          <button
+            on:click={handleAddExercise}
+            class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
+          >
+            Add Exercise
+          </button>
+        </div>
+      {/if}
+
+      <!-- Select Existing Exercise (Always Visible) -->
       {#if Object.keys(exercises).length > 0}
         <div class="text-center">
           <label for="exercise-select" class="text-lg text-gray-200 mr-3">Select Exercise:</label>
@@ -481,28 +494,39 @@
 
     <!-- Export/Import/Reset Section -->
     <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
-      <h2 class="text-2xl font-bold text-yellow-300 mb-4 text-center">Export/Import Exercises</h2>
-      <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold text-yellow-300 text-center flex-1">Export/Import Exercises</h2>
         <button
-          on:click={exportExercises}
-          class="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-cyan-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
+          on:click={() => (isExportImportExpanded = !isExportImportExpanded)}
+          class="text-yellow-300 hover:text-yellow-400 font-bold text-2xl focus:outline-none"
+          aria-label={isExportImportExpanded ? 'Collapse' : 'Expand'}
         >
-          Export Exercises
-        </button>
-        <input type="file" accept="application/json" on:change={importExercises} class="hidden" id="import-exercises" />
-        <label
-          for="import-exercises"
-          class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto text-center cursor-pointer"
-        >
-          Import Exercises
-        </label>
-        <button
-          on:click={resetAllData}
-          class="px-6 py-3 bg-gradient-to-r from-red-500 to-orange-600 text-white font-semibold rounded-lg shadow-lg hover:from-red-600 hover:to-orange-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
-        >
-          Reset All Data
+          {isExportImportExpanded ? '−' : '+'}
         </button>
       </div>
+      {#if isExportImportExpanded}
+        <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+          <button
+            on:click={exportExercises}
+            class="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-cyan-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
+          >
+            Export Exercises
+          </button>
+          <input type="file" accept="application/json" on:change={importExercises} class="hidden" id="import-exercises" />
+          <label
+            for="import-exercises"
+            class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto text-center cursor-pointer"
+          >
+            Import Exercises
+          </label>
+          <button
+            on:click={resetAllData}
+            class="px-6 py-3 bg-gradient-to-r from-red-500 to-orange-600 text-white font-semibold rounded-lg shadow-lg hover:from-red-600 hover:to-orange-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
+          >
+            Reset All Data
+          </button>
+        </div>
+      {/if}
     </div>
   </div>
 </div>
