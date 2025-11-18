@@ -71,11 +71,21 @@
   $: phaseNames = Object.keys(phases);
   $: currentPhaseIndex = currentExerciseData ? phaseNames.indexOf(currentExerciseData.currentPhaseName) : -1;
 
+  // Helper function to round weight based on value
+  function roundWeight(weight) {
+    // For weights between 5 and 25 pounds, round to nearest 2.5 pounds
+    if (weight >= 5 && weight <= 25) {
+      return Math.round(weight / 2.5) * 2.5;
+    }
+    // For all other weights, round to nearest 5 pounds
+    return Math.round(weight / 5) * 5;
+  }
+
   // Reactive calculation of target weights for the current exercise and phase
   $: targetWeights = currentPhase && currentExerciseData
     ? currentPhase.percentages.map(pct => {
         const rawWeight = currentExerciseData.maxWeight * (pct / 100);
-        return Math.round(rawWeight / 5) * 5;
+        return roundWeight(rawWeight);
       })
     : [];
 
@@ -176,12 +186,12 @@
     showCompletionMessage = true;
   }
 
-  // Function to calculate the target weight for a given percentage, rounded to the nearest 5 lbs
+  // Function to calculate the target weight for a given percentage, rounded appropriately
   function calculateWeight(percentage) {
     const exercise = exercises[selectedExerciseName];
     if (!exercise) return 0;
     const rawWeight = exercise.maxWeight * (percentage / 100);
-    return Math.round(rawWeight / 5) * 5;
+    return roundWeight(rawWeight);
   }
 
   // Function to handle changes in reps completed input for a specific set
@@ -220,8 +230,8 @@
         break;
       }
     }
-    // Ensure the new max weight is also rounded to the nearest 5 pounds
-    return Math.round((currentExerciseData.maxWeight + weightChange) / 5) * 5;
+    // Ensure the new max weight is also rounded appropriately
+    return roundWeight(currentExerciseData.maxWeight + weightChange);
   }
 
   // Function to complete the current session
