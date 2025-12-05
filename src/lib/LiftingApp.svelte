@@ -74,7 +74,7 @@
   let completionMessage = $state('');
   let showCompletionMessage = $state(false);
   let isManageExercisesExpanded = $state(true);
-  let isExportImportExpanded = $state(true);
+  let isExportImportExpanded = $state(false);
   let isPhaseDetailsExpanded = $state(true);
 
   // Derived state
@@ -115,8 +115,11 @@
           }
           exercises = parsedExercises;
           // Set selectedExerciseName after exercises are loaded
-          if (!selectedExerciseName && Object.keys(exercises).length > 0) {
-            selectedExerciseName = Object.keys(exercises)[0];
+          if (Object.keys(exercises).length > 0) {
+            if (!selectedExerciseName) {
+              selectedExerciseName = Object.keys(exercises)[0];
+            }
+            isManageExercisesExpanded = false;
           }
         }
       } catch (error) {
@@ -471,7 +474,7 @@
               <label for="set-{index}" class="text-lg text-gray-200">
                 Set {index + 1} ({currentExerciseData.currentPhaseName === 'Peak Phase'
                   ? currentPhase.repsPerSet[index]
-                  : currentPhase.repsPerSet} reps)
+                  : currentPhase.repsPerSet} reps @ {targetWeights[index]} lbs)
               </label>
               {#if index === currentPhase.sets - 1}
                 <input
