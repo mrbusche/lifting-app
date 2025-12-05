@@ -469,9 +469,9 @@
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {#each Array(currentPhase.sets) as _, index}
-            <div class="flex flex-col items-center">
-              <label for="set-{index}" class="text-lg mb-2 text-gray-200">
-                Set {index + 1} (Target: {currentExerciseData.currentPhaseName === 'Peak Phase'
+            <div class="flex flex-row items-center justify-start gap-4">
+              <label for="set-{index}" class="text-lg text-gray-200">
+                Set {index + 1} ({currentExerciseData.currentPhaseName === 'Peak Phase'
                   ? currentPhase.repsPerSet[index]
                   : currentPhase.repsPerSet} reps)
               </label>
