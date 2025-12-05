@@ -82,12 +82,13 @@
   }
 
   // Reactive calculation of target weights for the current exercise and phase
-  $: targetWeights = currentPhase && currentExerciseData
-    ? currentPhase.percentages.map(pct => {
-        const rawWeight = currentExerciseData.maxWeight * (pct / 100);
-        return roundWeight(rawWeight);
-      })
-    : [];
+  $: targetWeights =
+    currentPhase && currentExerciseData
+      ? currentPhase.percentages.map((pct) => {
+          const rawWeight = currentExerciseData.maxWeight * (pct / 100);
+          return roundWeight(rawWeight);
+        })
+      : [];
 
   // --- Load Exercises from Local Storage on initial mount ---
   onMount(() => {
@@ -216,7 +217,7 @@
 
     const lastSetReps = parseInt(currentExerciseData.repsCompleted[currentExerciseData.repsCompleted.length - 1]);
     if (isNaN(lastSetReps)) {
-      completionMessage = 'Please enter reps completed for all sets before completing the session.';
+      completionMessage = 'Please enter reps completed for the final set before completing the session.';
       showCompletionMessage = true;
       return currentExerciseData.maxWeight;
     }
@@ -238,10 +239,10 @@
   function completeSession() {
     if (!selectedExerciseName || !currentExerciseData || !currentPhase) return;
 
-    // Check if all reps are entered
-    const allRepsEntered = currentExerciseData.repsCompleted.every((reps) => reps !== '' && !isNaN(parseInt(reps)));
-    if (!allRepsEntered) {
-      completionMessage = 'Please enter reps completed for all sets before completing the session.';
+    // Check if the final set reps are entered
+    const lastSetReps = currentExerciseData.repsCompleted[currentExerciseData.repsCompleted.length - 1];
+    if (lastSetReps === '' || isNaN(parseInt(lastSetReps))) {
+      completionMessage = 'Please enter reps completed for the final set before completing the session.';
       showCompletionMessage = true;
       return;
     }
@@ -403,7 +404,7 @@
     {#if showCompletionMessage}
       <div class="bg-blue-600 bg-opacity-30 border border-blue-500 rounded-lg p-4 mb-6 w-full text-center shadow-md relative">
         <button
-          on:click={() => showCompletionMessage = false}
+          on:click={() => (showCompletionMessage = false)}
           class="absolute top-2 right-2 text-blue-200 hover:text-white text-xl font-bold transition-colors duration-200"
           aria-label="Close message"
         >
@@ -491,7 +492,6 @@
           Complete Session
         </button>
       </div>
-
     {:else}
       <div class="text-center text-lg text-gray-300">
         {#if Object.keys(exercises).length === 0}
