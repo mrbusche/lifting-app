@@ -61,8 +61,9 @@
   let newExerciseMaxWeight = '';
   let completionMessage = '';
   let showCompletionMessage = false;
-  let isManageExercisesExpanded = false;
-  let isExportImportExpanded = false;
+  let isManageExercisesExpanded = true;
+  let isExportImportExpanded = true;
+  let isPhaseDetailsExpanded = true;
 
   // Derived state: These reactive declarations only read from other state variables,
   // ensuring they don't cause circular updates.
@@ -82,12 +83,13 @@
   }
 
   // Reactive calculation of target weights for the current exercise and phase
-  $: targetWeights = currentPhase && currentExerciseData
-    ? currentPhase.percentages.map(pct => {
-        const rawWeight = currentExerciseData.maxWeight * (pct / 100);
-        return roundWeight(rawWeight);
-      })
-    : [];
+  $: targetWeights =
+    currentPhase && currentExerciseData
+      ? currentPhase.percentages.map((pct) => {
+          const rawWeight = currentExerciseData.maxWeight * (pct / 100);
+          return roundWeight(rawWeight);
+        })
+      : [];
 
   // --- Load Exercises from Local Storage on initial mount ---
   onMount(() => {
@@ -216,7 +218,7 @@
 
     const lastSetReps = parseInt(currentExerciseData.repsCompleted[currentExerciseData.repsCompleted.length - 1]);
     if (isNaN(lastSetReps)) {
-      completionMessage = 'Please enter reps completed for all sets before completing the session.';
+      completionMessage = 'Please enter reps completed for the final set before completing the session.';
       showCompletionMessage = true;
       return currentExerciseData.maxWeight;
     }
@@ -238,10 +240,10 @@
   function completeSession() {
     if (!selectedExerciseName || !currentExerciseData || !currentPhase) return;
 
-    // Check if all reps are entered
-    const allRepsEntered = currentExerciseData.repsCompleted.every((reps) => reps !== '' && !isNaN(parseInt(reps)));
-    if (!allRepsEntered) {
-      completionMessage = 'Please enter reps completed for all sets before completing the session.';
+    // Check if the final set reps are entered
+    const lastSetReps = currentExerciseData.repsCompleted[currentExerciseData.repsCompleted.length - 1];
+    if (lastSetReps === '' || isNaN(parseInt(lastSetReps))) {
+      completionMessage = 'Please enter reps completed for the final set before completing the session.';
       showCompletionMessage = true;
       return;
     }
@@ -403,7 +405,7 @@
     {#if showCompletionMessage}
       <div class="bg-blue-600 bg-opacity-30 border border-blue-500 rounded-lg p-4 mb-6 w-full text-center shadow-md relative">
         <button
-          on:click={() => showCompletionMessage = false}
+          on:click={() => (showCompletionMessage = false)}
           class="absolute top-2 right-2 text-blue-200 hover:text-white text-xl font-bold transition-colors duration-200"
           aria-label="Close message"
         >
@@ -422,43 +424,55 @@
       </div>
 
       <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
-        <h2 class="text-3xl font-bold mb-3 text-purple-300 text-center">
-          {currentExerciseData.currentPhaseName}
-        </h2>
-        <p class="text-lg text-gray-300 text-center mb-4">
-          Session {currentExerciseData.currentSessionIndex + 1} of {currentPhase.sessions}
-        </p>
-
-        <!-- Phase Details -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-200">
-          <div>
-            <h3 class="text-xl font-semibold text-pink-400 mb-2">Workout Details:</h3>
-            {#if currentExerciseData.currentPhaseName !== 'Peak Phase'}
-              <p>Sets: {currentPhase.sets}</p>
-            {:else}
-              <p>Sets: {currentPhase.sets} (Varying Reps/Percentages)</p>
-            {/if}
-            {#if currentExerciseData.currentPhaseName !== 'Peak Phase'}
-              <p>Reps per Set: {currentPhase.repsPerSet}</p>
-            {/if}
-            <p>Percentages of Max:</p>
-            <ul class="list-disc list-inside ml-4">
-              {#each currentPhase.percentages as pct, index}
-                <li>Set {index + 1}: {pct}% (Target: {targetWeights[index]} lbs)</li>
-              {/each}
-            </ul>
-          </div>
-
-          <!-- Progression Rules -->
-          <div>
-            <h3 class="text-xl font-semibold text-pink-400 mb-2">Progression Rules (Based on Last Set):</h3>
-            <ul class="list-disc list-inside ml-4">
-              {#each currentPhase.progression as rule, index}
-                <li>{rule.text}</li>
-              {/each}
-            </ul>
-          </div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-3xl font-bold text-purple-300 text-center flex-1">
+            {currentExerciseData.currentPhaseName}
+          </h2>
+          <button
+            on:click={() => (isPhaseDetailsExpanded = !isPhaseDetailsExpanded)}
+            class="text-purple-300 hover:text-purple-400 font-bold text-2xl focus:outline-none"
+            aria-label={isPhaseDetailsExpanded ? 'Collapse' : 'Expand'}
+          >
+            {isPhaseDetailsExpanded ? '−' : '+'}
+          </button>
         </div>
+
+        {#if isPhaseDetailsExpanded}
+          <p class="text-lg text-gray-300 text-center mb-4">
+            Session {currentExerciseData.currentSessionIndex + 1} of {currentPhase.sessions}
+          </p>
+
+          <!-- Phase Details -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-200">
+            <div>
+              <h3 class="text-xl font-semibold text-pink-400 mb-2">Workout Details:</h3>
+              {#if currentExerciseData.currentPhaseName !== 'Peak Phase'}
+                <p>Sets: {currentPhase.sets}</p>
+              {:else}
+                <p>Sets: {currentPhase.sets} (Varying Reps/Percentages)</p>
+              {/if}
+              {#if currentExerciseData.currentPhaseName !== 'Peak Phase'}
+                <p>Reps per Set: {currentPhase.repsPerSet}</p>
+              {/if}
+              <p>Percentages of Max:</p>
+              <ul class="list-disc list-inside ml-4">
+                {#each currentPhase.percentages as pct, index}
+                  <li>Set {index + 1}: {pct}% (Target: {targetWeights[index]} lbs)</li>
+                {/each}
+              </ul>
+            </div>
+
+            <!-- Progression Rules -->
+            <div>
+              <h3 class="text-xl font-semibold text-pink-400 mb-2">Progression Rules (Based on Last Set):</h3>
+              <ul class="list-disc list-inside ml-4">
+                {#each currentPhase.progression as rule, index}
+                  <li>{rule.text}</li>
+                {/each}
+              </ul>
+            </div>
+          </div>
+        {/if}
       </div>
 
       <!-- Reps Input for Current Session -->
@@ -468,19 +482,30 @@
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {#each Array(currentPhase.sets) as _, index}
-            <div class="flex flex-col items-center">
-              <label for="set-{index}" class="text-lg mb-2 text-gray-200">
-                Set {index + 1} (Target: {currentExerciseData.currentPhaseName === 'Peak Phase'
+            <div class="flex flex-row items-center justify-start gap-4">
+              <label for="set-{index}" class="text-lg text-gray-200">
+                Set {index + 1} ({currentExerciseData.currentPhaseName === 'Peak Phase'
                   ? currentPhase.repsPerSet[index]
                   : currentPhase.repsPerSet} reps)
               </label>
-              <input
-                id="set-{index}"
-                type="number"
-                bind:value={currentExerciseData.repsCompleted[index]}
-                placeholder="Reps done"
-                class="p-2 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 w-24 text-center"
-              />
+              {#if index === currentPhase.sets - 1}
+                <input
+                  id="set-{index}"
+                  type="number"
+                  bind:value={currentExerciseData.repsCompleted[index]}
+                  placeholder="Reps done"
+                  class="p-2 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 w-24 text-center"
+                />
+              {:else}
+                <div class="flex items-center justify-center h-10">
+                  <input
+                    id="set-{index}"
+                    type="checkbox"
+                    bind:checked={currentExerciseData.repsCompleted[index]}
+                    class="w-6 h-6 rounded bg-gray-600 border-gray-500 text-green-500 focus:ring-green-500 cursor-pointer"
+                  />
+                </div>
+              {/if}
             </div>
           {/each}
         </div>
@@ -491,7 +516,6 @@
           Complete Session
         </button>
       </div>
-
     {:else}
       <div class="text-center text-lg text-gray-300">
         {#if Object.keys(exercises).length === 0}
