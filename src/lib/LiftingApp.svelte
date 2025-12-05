@@ -471,7 +471,7 @@
               <label for="set-{index}" class="text-lg text-gray-200">
                 Set {index + 1} ({currentExerciseData.currentPhaseName === 'Peak Phase'
                   ? currentPhase.repsPerSet[index]
-                  : currentPhase.repsPerSet} reps)
+                  : currentPhase.repsPerSet} reps @ {targetWeights[index]} lbs)
               </label>
               {#if index === currentPhase.sets - 1}
                 <input
