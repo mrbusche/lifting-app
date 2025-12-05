@@ -1,7 +1,4 @@
-<script>
-  import { onMount } from 'svelte';
-  import { browser } from '$app/environment'; // Import 'browser' from SvelteKit's environment module
-
+<script module>
   // Define the structure and rules for each lifting phase
   const phases = {
     'Base Phase': {
@@ -54,6 +51,21 @@
     },
   };
 
+  // Helper function to round weight based on value
+  function roundWeight(weight) {
+    // For weights between 5 and 25 pounds, round to nearest 2.5 pounds
+    if (weight >= 5 && weight <= 25) {
+      return Math.round(weight / 2.5) * 2.5;
+    }
+    // For all other weights, round to nearest 5 pounds
+    return Math.round(weight / 5) * 5;
+  }
+</script>
+
+<script>
+  import { onMount } from 'svelte';
+  import { browser } from '$app/environment'; // Import 'browser' from SvelteKit's environment module
+
   // State variables
   let exercises = $state({});
   let selectedExerciseName = $state(null);
@@ -70,16 +82,6 @@
   let currentPhase = $derived(currentExerciseData ? phases[currentExerciseData.currentPhaseName] : null);
   let phaseNames = $derived(Object.keys(phases));
   let currentPhaseIndex = $derived(currentExerciseData ? phaseNames.indexOf(currentExerciseData.currentPhaseName) : -1);
-
-  // Helper function to round weight based on value
-  function roundWeight(weight) {
-    // For weights between 5 and 25 pounds, round to nearest 2.5 pounds
-    if (weight >= 5 && weight <= 25) {
-      return Math.round(weight / 2.5) * 2.5;
-    }
-    // For all other weights, round to nearest 5 pounds
-    return Math.round(weight / 5) * 5;
-  }
 
   // Reactive calculation of target weights for the current exercise and phase
   let targetWeights = $derived(
@@ -311,6 +313,35 @@
   }
 </script>
 
+{#snippet sectionHeader(
+  title,
+  expanded,
+  onToggle,
+  colorClass = 'text-yellow-300',
+  hoverClass = 'hover:text-yellow-400',
+  titleClass = 'text-2xl',
+)}
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="{titleClass} font-bold {colorClass} text-center flex-1">{title}</h2>
+    <button
+      onclick={onToggle}
+      class="{colorClass} {hoverClass} font-bold text-2xl focus:outline-none"
+      aria-label={expanded ? 'Collapse' : 'Expand'}
+    >
+      {expanded ? '−' : '+'}
+    </button>
+  </div>
+{/snippet}
+
+{#snippet actionButton(label, onclick, classes)}
+  <button
+    {onclick}
+    class="px-6 py-3 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 {classes}"
+  >
+    {label}
+  </button>
+{/snippet}
+
 <div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 text-white font-inter flex flex-col items-center p-4 sm:p-6 md:p-8">
   <div class="bg-gray-800 rounded-xl shadow-2xl p-6 sm:p-8 md:p-10 w-full max-w-4xl flex flex-col items-center">
     <h1
@@ -321,16 +352,7 @@
 
     <!-- Exercise Management Section -->
     <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-bold text-yellow-300 text-center flex-1">Manage Exercises</h2>
-        <button
-          onclick={() => (isManageExercisesExpanded = !isManageExercisesExpanded)}
-          class="text-yellow-300 hover:text-yellow-400 font-bold text-2xl focus:outline-none"
-          aria-label={isManageExercisesExpanded ? 'Collapse' : 'Expand'}
-        >
-          {isManageExercisesExpanded ? '−' : '+'}
-        </button>
-      </div>
+      {@render sectionHeader('Manage Exercises', isManageExercisesExpanded, () => (isManageExercisesExpanded = !isManageExercisesExpanded))}
 
       <!-- Add New Exercise (Collapsible) -->
       {#if isManageExercisesExpanded}
@@ -347,12 +369,11 @@
             placeholder="Initial Max Weight (lbs)"
             class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
           />
-          <button
-            onclick={handleAddExercise}
-            class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
-          >
-            Add Exercise
-          </button>
+          {@render actionButton(
+            'Add Exercise',
+            handleAddExercise,
+            'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 w-full sm:w-auto',
+          )}
         </div>
       {/if}
 
@@ -391,18 +412,14 @@
     <!-- Main Program Display (after selecting an exercise) -->
     {#if selectedExerciseName && currentExerciseData && currentPhase}
       <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-3xl font-bold text-purple-300 text-center flex-1">
-            {currentExerciseData.currentPhaseName}
-          </h2>
-          <button
-            onclick={() => (isPhaseDetailsExpanded = !isPhaseDetailsExpanded)}
-            class="text-purple-300 hover:text-purple-400 font-bold text-2xl focus:outline-none"
-            aria-label={isPhaseDetailsExpanded ? 'Collapse' : 'Expand'}
-          >
-            {isPhaseDetailsExpanded ? '−' : '+'}
-          </button>
-        </div>
+        {@render sectionHeader(
+          currentExerciseData.currentPhaseName,
+          isPhaseDetailsExpanded,
+          () => (isPhaseDetailsExpanded = !isPhaseDetailsExpanded),
+          'text-purple-300',
+          'hover:text-purple-400',
+          'text-3xl',
+        )}
 
         {#if isPhaseDetailsExpanded}
           <p class="text-lg text-gray-300 text-center mb-4">
@@ -477,12 +494,11 @@
             </div>
           {/each}
         </div>
-        <button
-          onclick={completeSession}
-          class="mt-8 px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-indigo-600 hover:to-purple-700 transition duration-300 ease-in-out transform hover:scale-105 w-full"
-        >
-          Complete Session
-        </button>
+        {@render actionButton(
+          'Complete Session',
+          completeSession,
+          'mt-8 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 w-full',
+        )}
       </div>
     {:else}
       <div class="text-center text-lg text-gray-300">
@@ -496,24 +512,14 @@
 
     <!-- Export/Import/Reset Section -->
     <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-bold text-yellow-300 text-center flex-1">Export/Import Exercises</h2>
-        <button
-          onclick={() => (isExportImportExpanded = !isExportImportExpanded)}
-          class="text-yellow-300 hover:text-yellow-400 font-bold text-2xl focus:outline-none"
-          aria-label={isExportImportExpanded ? 'Collapse' : 'Expand'}
-        >
-          {isExportImportExpanded ? '−' : '+'}
-        </button>
-      </div>
+      {@render sectionHeader('Export/Import Exercises', isExportImportExpanded, () => (isExportImportExpanded = !isExportImportExpanded))}
       {#if isExportImportExpanded}
         <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
-          <button
-            onclick={exportExercises}
-            class="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-cyan-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
-          >
-            Export Exercises
-          </button>
+          {@render actionButton(
+            'Export Exercises',
+            exportExercises,
+            'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 w-full sm:w-auto',
+          )}
           <input type="file" accept="application/json" onchange={importExercises} class="hidden" id="import-exercises" />
           <label
             for="import-exercises"
@@ -521,12 +527,11 @@
           >
             Import Exercises
           </label>
-          <button
-            onclick={resetAllData}
-            class="px-6 py-3 bg-gradient-to-r from-red-500 to-orange-600 text-white font-semibold rounded-lg shadow-lg hover:from-red-600 hover:to-orange-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
-          >
-            Reset All Data
-          </button>
+          {@render actionButton(
+            'Reset All Data',
+            resetAllData,
+            'bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 w-full sm:w-auto',
+          )}
         </div>
       {/if}
     </div>
