@@ -475,13 +475,24 @@
                   ? currentPhase.repsPerSet[index]
                   : currentPhase.repsPerSet} reps)
               </label>
-              <input
-                id="set-{index}"
-                type="number"
-                bind:value={currentExerciseData.repsCompleted[index]}
-                placeholder="Reps done"
-                class="p-2 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 w-24 text-center"
-              />
+              {#if index === currentPhase.sets - 1}
+                <input
+                  id="set-{index}"
+                  type="number"
+                  bind:value={currentExerciseData.repsCompleted[index]}
+                  placeholder="Reps done"
+                  class="p-2 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 w-24 text-center"
+                />
+              {:else}
+                <div class="flex items-center justify-center h-10">
+                  <input
+                    id="set-{index}"
+                    type="checkbox"
+                    bind:checked={currentExerciseData.repsCompleted[index]}
+                    class="w-6 h-6 rounded bg-gray-600 border-gray-500 text-green-500 focus:ring-green-500 cursor-pointer"
+                  />
+                </div>
+              {/if}
             </div>
           {/each}
         </div>
