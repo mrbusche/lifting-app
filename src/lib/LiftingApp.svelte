@@ -63,6 +63,7 @@
   let showCompletionMessage = false;
   let isManageExercisesExpanded = false;
   let isExportImportExpanded = false;
+  let isPhaseDetailsExpanded = true;
 
   // Derived state: These reactive declarations only read from other state variables,
   // ensuring they don't cause circular updates.
@@ -423,43 +424,55 @@
       </div>
 
       <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
-        <h2 class="text-3xl font-bold mb-3 text-purple-300 text-center">
-          {currentExerciseData.currentPhaseName}
-        </h2>
-        <p class="text-lg text-gray-300 text-center mb-4">
-          Session {currentExerciseData.currentSessionIndex + 1} of {currentPhase.sessions}
-        </p>
-
-        <!-- Phase Details -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-200">
-          <div>
-            <h3 class="text-xl font-semibold text-pink-400 mb-2">Workout Details:</h3>
-            {#if currentExerciseData.currentPhaseName !== 'Peak Phase'}
-              <p>Sets: {currentPhase.sets}</p>
-            {:else}
-              <p>Sets: {currentPhase.sets} (Varying Reps/Percentages)</p>
-            {/if}
-            {#if currentExerciseData.currentPhaseName !== 'Peak Phase'}
-              <p>Reps per Set: {currentPhase.repsPerSet}</p>
-            {/if}
-            <p>Percentages of Max:</p>
-            <ul class="list-disc list-inside ml-4">
-              {#each currentPhase.percentages as pct, index}
-                <li>Set {index + 1}: {pct}% (Target: {targetWeights[index]} lbs)</li>
-              {/each}
-            </ul>
-          </div>
-
-          <!-- Progression Rules -->
-          <div>
-            <h3 class="text-xl font-semibold text-pink-400 mb-2">Progression Rules (Based on Last Set):</h3>
-            <ul class="list-disc list-inside ml-4">
-              {#each currentPhase.progression as rule, index}
-                <li>{rule.text}</li>
-              {/each}
-            </ul>
-          </div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-3xl font-bold text-purple-300 text-center flex-1">
+            {currentExerciseData.currentPhaseName}
+          </h2>
+          <button
+            on:click={() => (isPhaseDetailsExpanded = !isPhaseDetailsExpanded)}
+            class="text-purple-300 hover:text-purple-400 font-bold text-2xl focus:outline-none"
+            aria-label={isPhaseDetailsExpanded ? 'Collapse' : 'Expand'}
+          >
+            {isPhaseDetailsExpanded ? '−' : '+'}
+          </button>
         </div>
+
+        {#if isPhaseDetailsExpanded}
+          <p class="text-lg text-gray-300 text-center mb-4">
+            Session {currentExerciseData.currentSessionIndex + 1} of {currentPhase.sessions}
+          </p>
+
+          <!-- Phase Details -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-200">
+            <div>
+              <h3 class="text-xl font-semibold text-pink-400 mb-2">Workout Details:</h3>
+              {#if currentExerciseData.currentPhaseName !== 'Peak Phase'}
+                <p>Sets: {currentPhase.sets}</p>
+              {:else}
+                <p>Sets: {currentPhase.sets} (Varying Reps/Percentages)</p>
+              {/if}
+              {#if currentExerciseData.currentPhaseName !== 'Peak Phase'}
+                <p>Reps per Set: {currentPhase.repsPerSet}</p>
+              {/if}
+              <p>Percentages of Max:</p>
+              <ul class="list-disc list-inside ml-4">
+                {#each currentPhase.percentages as pct, index}
+                  <li>Set {index + 1}: {pct}% (Target: {targetWeights[index]} lbs)</li>
+                {/each}
+              </ul>
+            </div>
+
+            <!-- Progression Rules -->
+            <div>
+              <h3 class="text-xl font-semibold text-pink-400 mb-2">Progression Rules (Based on Last Set):</h3>
+              <ul class="list-disc list-inside ml-4">
+                {#each currentPhase.progression as rule, index}
+                  <li>{rule.text}</li>
+                {/each}
+              </ul>
+            </div>
+          </div>
+        {/if}
       </div>
 
       <!-- Reps Input for Current Session -->
