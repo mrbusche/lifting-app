@@ -61,8 +61,8 @@
   let newExerciseMaxWeight = '';
   let completionMessage = '';
   let showCompletionMessage = false;
-  let isManageExercisesExpanded = false;
-  let isExportImportExpanded = false;
+  let isManageExercisesExpanded = true;
+  let isExportImportExpanded = true;
   let isPhaseDetailsExpanded = true;
 
   // Derived state: These reactive declarations only read from other state variables,
