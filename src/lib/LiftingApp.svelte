@@ -74,7 +74,7 @@
   let completionMessage = $state('');
   let showCompletionMessage = $state(false);
   let isManageExercisesExpanded = $state(true);
-  let isExportImportExpanded = $state(true);
+  let isExportImportExpanded = $state(false);
   let isPhaseDetailsExpanded = $state(true);
 
   // Derived state
@@ -115,8 +115,11 @@
           }
           exercises = parsedExercises;
           // Set selectedExerciseName after exercises are loaded
-          if (!selectedExerciseName && Object.keys(exercises).length > 0) {
-            selectedExerciseName = Object.keys(exercises)[0];
+          if (Object.keys(exercises).length > 0) {
+            if (!selectedExerciseName) {
+              selectedExerciseName = Object.keys(exercises)[0];
+            }
+            isManageExercisesExpanded = false;
           }
         }
       } catch (error) {
