@@ -55,22 +55,21 @@
   };
 
   // State variables
-  let exercises = {};
-  let selectedExerciseName = null;
-  let newExerciseName = '';
-  let newExerciseMaxWeight = '';
-  let completionMessage = '';
-  let showCompletionMessage = false;
-  let isManageExercisesExpanded = true;
-  let isExportImportExpanded = true;
-  let isPhaseDetailsExpanded = true;
+  let exercises = $state({});
+  let selectedExerciseName = $state(null);
+  let newExerciseName = $state('');
+  let newExerciseMaxWeight = $state('');
+  let completionMessage = $state('');
+  let showCompletionMessage = $state(false);
+  let isManageExercisesExpanded = $state(true);
+  let isExportImportExpanded = $state(true);
+  let isPhaseDetailsExpanded = $state(true);
 
-  // Derived state: These reactive declarations only read from other state variables,
-  // ensuring they don't cause circular updates.
-  $: currentExerciseData = selectedExerciseName ? exercises[selectedExerciseName] : null;
-  $: currentPhase = currentExerciseData ? phases[currentExerciseData.currentPhaseName] : null;
-  $: phaseNames = Object.keys(phases);
-  $: currentPhaseIndex = currentExerciseData ? phaseNames.indexOf(currentExerciseData.currentPhaseName) : -1;
+  // Derived state
+  let currentExerciseData = $derived(selectedExerciseName ? exercises[selectedExerciseName] : null);
+  let currentPhase = $derived(currentExerciseData ? phases[currentExerciseData.currentPhaseName] : null);
+  let phaseNames = $derived(Object.keys(phases));
+  let currentPhaseIndex = $derived(currentExerciseData ? phaseNames.indexOf(currentExerciseData.currentPhaseName) : -1);
 
   // Helper function to round weight based on value
   function roundWeight(weight) {
@@ -83,13 +82,14 @@
   }
 
   // Reactive calculation of target weights for the current exercise and phase
-  $: targetWeights =
+  let targetWeights = $derived(
     currentPhase && currentExerciseData
       ? currentPhase.percentages.map((pct) => {
           const rawWeight = currentExerciseData.maxWeight * (pct / 100);
           return roundWeight(rawWeight);
         })
-      : [];
+      : [],
+  );
 
   // --- Load Exercises from Local Storage on initial mount ---
   onMount(() => {
@@ -126,8 +126,7 @@
   });
 
   // --- Save Exercises to Local Storage whenever 'exercises' state changes ---
-  // Svelte reactive statement: runs whenever 'exercises' changes
-  $: {
+  $effect(() => {
     if (browser) {
       // Only run in the browser
       try {
@@ -149,7 +148,7 @@
         showCompletionMessage = true;
       }
     }
-  }
+  });
 
   // Function to handle adding a new exercise
   function handleAddExercise() {
@@ -177,10 +176,7 @@
       repsCompleted: Array(phases['Base Phase'].sets).fill(''), // Initialize reps for the new exercise
     };
 
-    exercises = {
-      ...exercises,
-      [newExerciseName.trim()]: newExerciseData,
-    };
+    exercises[newExerciseName.trim()] = newExerciseData;
     selectedExerciseName = newExerciseName.trim();
     newExerciseName = '';
     newExerciseMaxWeight = '';
@@ -194,22 +190,6 @@
     if (!exercise) return 0;
     const rawWeight = exercise.maxWeight * (percentage / 100);
     return roundWeight(rawWeight);
-  }
-
-  // Function to handle changes in reps completed input for a specific set
-  function handleRepsChange(index, value) {
-    if (!selectedExerciseName) return;
-    // Create a copy of the repsCompleted array to ensure Svelte detects the change
-    const newReps = [...exercises[selectedExerciseName].repsCompleted];
-    newReps[index] = value;
-    // Update the exercises object immutably to trigger reactivity
-    exercises = {
-      ...exercises,
-      [selectedExerciseName]: {
-        ...exercises[selectedExerciseName],
-        repsCompleted: newReps,
-      },
-    };
   }
 
   // Function to calculate the next max weight based on the last set's performance
@@ -250,40 +230,33 @@
 
     const newMaxWeight = calculateNextMaxWeight();
 
-    // Create an updated copy of the current exercise data
-    const updatedExercise = { ...exercises[selectedExerciseName] };
-    updatedExercise.maxWeight = newMaxWeight;
+    // Update the current exercise data directly
+    exercises[selectedExerciseName].maxWeight = newMaxWeight;
 
     // Determine if phase or session changes
-    if (updatedExercise.currentSessionIndex === currentPhase.sessions - 1) {
+    if (exercises[selectedExerciseName].currentSessionIndex === currentPhase.sessions - 1) {
       // Phase completed - advance to next phase if available
       const nextPhaseIndex = currentPhaseIndex + 1;
       if (nextPhaseIndex < phaseNames.length) {
         const nextPhaseName = phaseNames[nextPhaseIndex];
         const nextPhase = phases[nextPhaseName];
-        updatedExercise.currentPhaseName = nextPhaseName;
-        updatedExercise.currentSessionIndex = 0;
-        updatedExercise.repsCompleted = Array(nextPhase.sets).fill('');
+        exercises[selectedExerciseName].currentPhaseName = nextPhaseName;
+        exercises[selectedExerciseName].currentSessionIndex = 0;
+        exercises[selectedExerciseName].repsCompleted = Array(nextPhase.sets).fill('');
         completionMessage = `Phase "${currentExerciseData.currentPhaseName}" completed for ${selectedExerciseName}! Moving to "${nextPhaseName}". Your new max weight is ${newMaxWeight} lbs.`;
       } else {
         // All phases completed - restart the current (final) phase
-        updatedExercise.currentSessionIndex = 0;
-        updatedExercise.repsCompleted = Array(currentPhase.sets).fill('');
+        exercises[selectedExerciseName].currentSessionIndex = 0;
+        exercises[selectedExerciseName].repsCompleted = Array(currentPhase.sets).fill('');
         completionMessage = `Congratulations! All phases completed for ${selectedExerciseName}! Your final max weight is ${newMaxWeight} lbs. Restarting "${currentExerciseData.currentPhaseName}".`;
       }
       showCompletionMessage = true;
     } else {
-      completionMessage = `Session ${updatedExercise.currentSessionIndex + 1} completed for ${selectedExerciseName}! Your new max weight for the next session is ${newMaxWeight} lbs.`;
+      completionMessage = `Session ${exercises[selectedExerciseName].currentSessionIndex + 1} completed for ${selectedExerciseName}! Your new max weight for the next session is ${newMaxWeight} lbs.`;
       showCompletionMessage = true;
-      updatedExercise.currentSessionIndex += 1; // Move to the next session
-      updatedExercise.repsCompleted = Array(currentPhase.sets).fill('');
+      exercises[selectedExerciseName].currentSessionIndex += 1; // Move to the next session
+      exercises[selectedExerciseName].repsCompleted = Array(currentPhase.sets).fill('');
     }
-
-    // Update the exercises object immutably to trigger reactivity
-    exercises = {
-      ...exercises,
-      [selectedExerciseName]: updatedExercise,
-    };
   }
 
   // --- Export and Import Functions ---
@@ -351,7 +324,7 @@
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-2xl font-bold text-yellow-300 text-center flex-1">Manage Exercises</h2>
         <button
-          on:click={() => (isManageExercisesExpanded = !isManageExercisesExpanded)}
+          onclick={() => (isManageExercisesExpanded = !isManageExercisesExpanded)}
           class="text-yellow-300 hover:text-yellow-400 font-bold text-2xl focus:outline-none"
           aria-label={isManageExercisesExpanded ? 'Collapse' : 'Expand'}
         >
@@ -375,7 +348,7 @@
             class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
           />
           <button
-            on:click={handleAddExercise}
+            onclick={handleAddExercise}
             class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
           >
             Add Exercise
@@ -405,7 +378,7 @@
     {#if showCompletionMessage}
       <div class="bg-blue-600 bg-opacity-30 border border-blue-500 rounded-lg p-4 mb-6 w-full text-center shadow-md relative">
         <button
-          on:click={() => (showCompletionMessage = false)}
+          onclick={() => (showCompletionMessage = false)}
           class="absolute top-2 right-2 text-blue-200 hover:text-white text-xl font-bold transition-colors duration-200"
           aria-label="Close message"
         >
@@ -417,19 +390,13 @@
 
     <!-- Main Program Display (after selecting an exercise) -->
     {#if selectedExerciseName && currentExerciseData && currentPhase}
-      <div class="bg-gray-700 rounded-lg p-4 mb-6 w-full text-center shadow-inner">
-        <p class="text-lg sm:text-xl font-semibold">
-          Current Max Weight for {selectedExerciseName}: <span class="text-yellow-400">{currentExerciseData.maxWeight} lbs</span>
-        </p>
-      </div>
-
       <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-3xl font-bold text-purple-300 text-center flex-1">
             {currentExerciseData.currentPhaseName}
           </h2>
           <button
-            on:click={() => (isPhaseDetailsExpanded = !isPhaseDetailsExpanded)}
+            onclick={() => (isPhaseDetailsExpanded = !isPhaseDetailsExpanded)}
             class="text-purple-300 hover:text-purple-400 font-bold text-2xl focus:outline-none"
             aria-label={isPhaseDetailsExpanded ? 'Collapse' : 'Expand'}
           >
@@ -439,7 +406,8 @@
 
         {#if isPhaseDetailsExpanded}
           <p class="text-lg text-gray-300 text-center mb-4">
-            Session {currentExerciseData.currentSessionIndex + 1} of {currentPhase.sessions}
+            Session {currentExerciseData.currentSessionIndex + 1} of {currentPhase.sessions}, max weight
+            <span class="text-yellow-400">{currentExerciseData.maxWeight} lbs</span>
           </p>
 
           <!-- Phase Details -->
@@ -510,7 +478,7 @@
           {/each}
         </div>
         <button
-          on:click={completeSession}
+          onclick={completeSession}
           class="mt-8 px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-indigo-600 hover:to-purple-700 transition duration-300 ease-in-out transform hover:scale-105 w-full"
         >
           Complete Session
@@ -531,7 +499,7 @@
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-2xl font-bold text-yellow-300 text-center flex-1">Export/Import Exercises</h2>
         <button
-          on:click={() => (isExportImportExpanded = !isExportImportExpanded)}
+          onclick={() => (isExportImportExpanded = !isExportImportExpanded)}
           class="text-yellow-300 hover:text-yellow-400 font-bold text-2xl focus:outline-none"
           aria-label={isExportImportExpanded ? 'Collapse' : 'Expand'}
         >
@@ -541,12 +509,12 @@
       {#if isExportImportExpanded}
         <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
           <button
-            on:click={exportExercises}
+            onclick={exportExercises}
             class="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-600 hover:to-cyan-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
           >
             Export Exercises
           </button>
-          <input type="file" accept="application/json" on:change={importExercises} class="hidden" id="import-exercises" />
+          <input type="file" accept="application/json" onchange={importExercises} class="hidden" id="import-exercises" />
           <label
             for="import-exercises"
             class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto text-center cursor-pointer"
@@ -554,7 +522,7 @@
             Import Exercises
           </label>
           <button
-            on:click={resetAllData}
+            onclick={resetAllData}
             class="px-6 py-3 bg-gradient-to-r from-red-500 to-orange-600 text-white font-semibold rounded-lg shadow-lg hover:from-red-600 hover:to-orange-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto"
           >
             Reset All Data
