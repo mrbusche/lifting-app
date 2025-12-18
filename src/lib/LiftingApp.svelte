@@ -112,6 +112,10 @@
             if (phase && exercise.repsCompleted.length !== phase.sets) {
               exercise.repsCompleted = Array(phase.sets).fill('');
             }
+            // Initialize history array if it doesn't exist
+            if (!Array.isArray(exercise.history)) {
+              exercise.history = [];
+            }
           }
           exercises = parsedExercises;
           // Set selectedExerciseName after exercises are loaded
@@ -179,6 +183,7 @@
       currentPhaseName: 'Base Phase',
       currentSessionIndex: 0,
       repsCompleted: Array(phases['Base Phase'].sets).fill(''), // Initialize reps for the new exercise
+      history: [], // Track history of max weight changes
     };
 
     exercises[newExerciseName.trim()] = newExerciseData;
@@ -234,9 +239,22 @@
     }
 
     const newMaxWeight = calculateNextMaxWeight();
+    const oldMaxWeight = exercises[selectedExerciseName].maxWeight;
 
     // Update the current exercise data directly
     exercises[selectedExerciseName].maxWeight = newMaxWeight;
+
+    // Record history entry if max weight changed
+    if (newMaxWeight !== oldMaxWeight) {
+      const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      if (!Array.isArray(exercises[selectedExerciseName].history)) {
+        exercises[selectedExerciseName].history = [];
+      }
+      exercises[selectedExerciseName].history.push({
+        date: today,
+        maxWeight: newMaxWeight,
+      });
+    }
 
     // Determine if phase or session changes
     if (exercises[selectedExerciseName].currentSessionIndex === currentPhase.sessions - 1) {
@@ -352,6 +370,16 @@
     >
       Lifting Program Tracker
     </h1>
+
+    <!-- Navigation to History -->
+    <div class="mb-6 w-full flex justify-center">
+      <a
+        href="/history"
+        class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+      >
+        View Workout History
+      </a>
+    </div>
 
     <!-- Exercise Management Section -->
     <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
