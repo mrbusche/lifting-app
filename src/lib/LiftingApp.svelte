@@ -342,7 +342,7 @@
   hoverClass = 'hover:text-yellow-400',
   titleClass = 'text-2xl',
 )}
-  <div class="flex items-center justify-between mb-4">
+  <div class="flex items-center justify-between">
     <h2 class="{titleClass} font-bold {colorClass} text-center flex-1">{title}</h2>
     <button
       onclick={onToggle}
@@ -542,7 +542,7 @@
     {/if}
 
     <!-- Export/Import/Reset Section -->
-    <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
+    <div class="bg-gray-700 rounded-lg p-5 w-full shadow-lg">
       {@render sectionHeader('Export/Import Exercises', isExportImportExpanded, () => (isExportImportExpanded = !isExportImportExpanded))}
       {#if isExportImportExpanded}
         <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
