@@ -4,6 +4,7 @@
 
   let exercises = $state({});
   let hasAnyHistory = $state(false);
+  let weightUnit = $state('lbs'); // 'lbs' or 'kg'
 
   onMount(() => {
     if (browser) {
@@ -15,6 +16,12 @@
 
           // Check if any exercise has history
           hasAnyHistory = Object.values(parsedExercises).some((exercise) => Array.isArray(exercise.history) && exercise.history.length > 0);
+        }
+
+        // Load weight unit preference
+        const storedUnit = localStorage.getItem('liftingTrackerWeightUnit');
+        if (storedUnit === 'kg' || storedUnit === 'lbs') {
+          weightUnit = storedUnit;
         }
       } catch (error) {
         console.error('Error loading exercises from local storage:', error);
@@ -29,6 +36,30 @@
       return new Date(b.date) - new Date(a.date);
     });
   }
+
+  // Helper function to convert pounds to kilograms for display
+  function convertWeight(weightInLbs) {
+    if (weightUnit === 'kg') {
+      return Math.round(weightInLbs * 0.453592 * 10) / 10; // Convert and round to 1 decimal place
+    }
+    return weightInLbs;
+  }
+
+  // Helper function to get the current unit label
+  function getUnitLabel() {
+    return weightUnit === 'kg' ? 'kg' : 'lbs';
+  }
+
+  // Save weight unit preference to localStorage
+  $effect(() => {
+    if (browser) {
+      try {
+        localStorage.setItem('liftingTrackerWeightUnit', weightUnit);
+      } catch (error) {
+        console.error('Error saving weight unit preference:', error);
+      }
+    }
+  });
 </script>
 
 <div
@@ -37,6 +68,16 @@
   <div class="bg-gray-800 rounded-xl shadow-2xl p-6 sm:p-8 md:p-10 w-full max-w-4xl">
     <div class="mb-8">
       <h1 class="text-4xl sm:text-5xl font-bold text-yellow-300 text-center mb-6">Workout History</h1>
+
+      <!-- Unit Toggle -->
+      <div class="flex justify-center mb-4">
+        <button
+          onclick={() => (weightUnit = weightUnit === 'lbs' ? 'kg' : 'lbs')}
+          class="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+        >
+          Switch to {weightUnit === 'lbs' ? 'kg' : 'lbs'}
+        </button>
+      </div>
 
       <div class="flex justify-center mb-6">
         <a
@@ -66,14 +107,14 @@
                   <thead>
                     <tr class="border-b border-gray-600">
                       <th class="text-left py-3 px-4 text-purple-300 font-semibold">Date</th>
-                      <th class="text-left py-3 px-4 text-purple-300 font-semibold">Max Weight (lbs)</th>
+                      <th class="text-left py-3 px-4 text-purple-300 font-semibold">Max Weight ({getUnitLabel()})</th>
                     </tr>
                   </thead>
                   <tbody>
                     {#each sortedHistory as entry}
                       <tr class="border-b border-gray-600 hover:bg-gray-600 transition">
                         <td class="py-3 px-4 text-gray-200">{entry.date}</td>
-                        <td class="py-3 px-4 text-gray-200 font-semibold">{entry.maxWeight}</td>
+                        <td class="py-3 px-4 text-gray-200 font-semibold">{convertWeight(entry.maxWeight)}</td>
                       </tr>
                     {/each}
                   </tbody>

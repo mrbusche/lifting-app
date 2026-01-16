@@ -60,6 +60,7 @@
     // For all other weights, round to nearest 5 pounds
     return Math.round(weight / 5) * 5;
   }
+
 </script>
 
 <script>
@@ -76,6 +77,20 @@
   let isManageExercisesExpanded = $state(true);
   let isExportImportExpanded = $state(false);
   let isPhaseDetailsExpanded = $state(true);
+  let weightUnit = $state('lbs'); // 'lbs' or 'kg'
+
+  // Helper function to convert pounds to kilograms for display
+  function convertWeight(weightInLbs) {
+    if (weightUnit === 'kg') {
+      return Math.round(weightInLbs * 0.453592 * 10) / 10; // Convert and round to 1 decimal place
+    }
+    return weightInLbs;
+  }
+
+  // Helper function to get the current unit label
+  function getUnitLabel() {
+    return weightUnit === 'kg' ? 'kg' : 'lbs';
+  }
 
   // Derived state
   let currentExerciseData = $derived(selectedExerciseName ? exercises[selectedExerciseName] : null);
@@ -126,6 +141,12 @@
             isManageExercisesExpanded = false;
           }
         }
+
+        // Load weight unit preference
+        const storedUnit = localStorage.getItem('liftingTrackerWeightUnit');
+        if (storedUnit === 'kg' || storedUnit === 'lbs') {
+          weightUnit = storedUnit;
+        }
       } catch (error) {
         console.error('Error loading exercises from local storage:', error);
         completionMessage = 'Failed to load saved exercises. Local storage might be corrupted.';
@@ -155,6 +176,17 @@
         console.error('Error saving exercises to local storage:', error);
         completionMessage = 'Failed to save progress. Local storage might be full or inaccessible.';
         showCompletionMessage = true;
+      }
+    }
+  });
+
+  // --- Save weight unit preference to Local Storage ---
+  $effect(() => {
+    if (browser) {
+      try {
+        localStorage.setItem('liftingTrackerWeightUnit', weightUnit);
+      } catch (error) {
+        console.error('Error saving weight unit preference:', error);
       }
     }
   });
@@ -266,16 +298,16 @@
         exercises[selectedExerciseName].currentPhaseName = nextPhaseName;
         exercises[selectedExerciseName].currentSessionIndex = 0;
         exercises[selectedExerciseName].repsCompleted = Array(nextPhase.sets).fill('');
-        completionMessage = `Phase "${currentExerciseData.currentPhaseName}" completed for ${selectedExerciseName}! Moving to "${nextPhaseName}". Your new max weight is ${newMaxWeight} lbs.`;
+        completionMessage = `Phase "${currentExerciseData.currentPhaseName}" completed for ${selectedExerciseName}! Moving to "${nextPhaseName}". Your new max weight is ${convertWeight(newMaxWeight)} ${getUnitLabel()}.`;
       } else {
         // All phases completed - restart the current (final) phase
         exercises[selectedExerciseName].currentSessionIndex = 0;
         exercises[selectedExerciseName].repsCompleted = Array(currentPhase.sets).fill('');
-        completionMessage = `Congratulations! All phases completed for ${selectedExerciseName}! Your final max weight is ${newMaxWeight} lbs. Restarting "${currentExerciseData.currentPhaseName}".`;
+        completionMessage = `Congratulations! All phases completed for ${selectedExerciseName}! Your final max weight is ${convertWeight(newMaxWeight)} ${getUnitLabel()}. Restarting "${currentExerciseData.currentPhaseName}".`;
       }
       showCompletionMessage = true;
     } else {
-      completionMessage = `Session ${exercises[selectedExerciseName].currentSessionIndex + 1} completed for ${selectedExerciseName}! Your new max weight for the next session is ${newMaxWeight} lbs.`;
+      completionMessage = `Session ${exercises[selectedExerciseName].currentSessionIndex + 1} completed for ${selectedExerciseName}! Your new max weight for the next session is ${convertWeight(newMaxWeight)} ${getUnitLabel()}.`;
       showCompletionMessage = true;
       exercises[selectedExerciseName].currentSessionIndex += 1; // Move to the next session
       exercises[selectedExerciseName].repsCompleted = Array(currentPhase.sets).fill('');
@@ -371,6 +403,16 @@
       Lifting Program Tracker
     </h1>
 
+    <!-- Unit Toggle -->
+    <div class="mb-6 w-full flex justify-center">
+      <button
+        onclick={() => (weightUnit = weightUnit === 'lbs' ? 'kg' : 'lbs')}
+        class="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+      >
+        Switch to {weightUnit === 'lbs' ? 'kg' : 'lbs'}
+      </button>
+    </div>
+
     <!-- Navigation to History -->
     <div class="mb-6 w-full flex justify-center">
       <a
@@ -397,7 +439,7 @@
           <input
             type="number"
             bind:value={newExerciseMaxWeight}
-            placeholder="Initial Max Weight (lbs)"
+            placeholder="Initial Max Weight ({getUnitLabel()})"
             class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
           />
           {@render actionButton(
@@ -455,7 +497,7 @@
         {#if isPhaseDetailsExpanded}
           <p class="text-lg text-gray-300 text-center mb-4">
             Session {currentExerciseData.currentSessionIndex + 1} of {currentPhase.sessions}, max weight
-            <span class="text-yellow-400">{currentExerciseData.maxWeight} lbs</span>
+            <span class="text-yellow-400">{convertWeight(currentExerciseData.maxWeight)} {getUnitLabel()}</span>
           </p>
 
           <!-- Phase Details -->
@@ -473,7 +515,7 @@
               <p>Percentages of Max:</p>
               <ul class="list-disc list-inside ml-4">
                 {#each currentPhase.percentages as pct, index}
-                  <li>Set {index + 1}: {pct}% (Target: {targetWeights[index]} lbs)</li>
+                  <li>Set {index + 1}: {pct}% (Target: {convertWeight(targetWeights[index])} {getUnitLabel()})</li>
                 {/each}
               </ul>
             </div>
@@ -502,7 +544,7 @@
               <label for="set-{index}" class="text-lg text-gray-200">
                 Set {index + 1} ({currentExerciseData.currentPhaseName === 'Peak Phase'
                   ? currentPhase.repsPerSet[index]
-                  : currentPhase.repsPerSet} reps @ {targetWeights[index]} lbs)
+                  : currentPhase.repsPerSet} reps @ {convertWeight(targetWeights[index])} {getUnitLabel()})
               </label>
               {#if index === currentPhase.sets - 1}
                 <input
