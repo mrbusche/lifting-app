@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
+  import { convertWeight, getUnitLabel } from '$lib/weightUtils';
 
   let exercises = $state({});
   let hasAnyHistory = $state(false);
@@ -35,19 +36,6 @@
     return [...exercise.history].sort((a, b) => {
       return new Date(b.date) - new Date(a.date);
     });
-  }
-
-  // Helper function to convert pounds to kilograms for display
-  function convertWeight(weightInLbs) {
-    if (weightUnit === 'kg') {
-      return Math.round(weightInLbs * 0.453592 * 10) / 10; // Convert and round to 1 decimal place
-    }
-    return weightInLbs;
-  }
-
-  // Helper function to get the current unit label
-  function getUnitLabel() {
-    return weightUnit === 'kg' ? 'kg' : 'lbs';
   }
 
   // Save weight unit preference to localStorage
@@ -107,14 +95,14 @@
                   <thead>
                     <tr class="border-b border-gray-600">
                       <th class="text-left py-3 px-4 text-purple-300 font-semibold">Date</th>
-                      <th class="text-left py-3 px-4 text-purple-300 font-semibold">Max Weight ({getUnitLabel()})</th>
+                      <th class="text-left py-3 px-4 text-purple-300 font-semibold">Max Weight ({getUnitLabel(weightUnit)})</th>
                     </tr>
                   </thead>
                   <tbody>
                     {#each sortedHistory as entry}
                       <tr class="border-b border-gray-600 hover:bg-gray-600 transition">
                         <td class="py-3 px-4 text-gray-200">{entry.date}</td>
-                        <td class="py-3 px-4 text-gray-200 font-semibold">{convertWeight(entry.maxWeight)}</td>
+                        <td class="py-3 px-4 text-gray-200 font-semibold">{convertWeight(entry.maxWeight, weightUnit)}</td>
                       </tr>
                     {/each}
                   </tbody>

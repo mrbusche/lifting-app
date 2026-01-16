@@ -66,6 +66,7 @@
 <script>
   import { onMount } from 'svelte';
   import { browser } from '$app/environment'; // Import 'browser' from SvelteKit's environment module
+  import { convertWeight, getUnitLabel } from './weightUtils';
 
   // State variables
   let exercises = $state({});
@@ -78,19 +79,6 @@
   let isExportImportExpanded = $state(false);
   let isPhaseDetailsExpanded = $state(true);
   let weightUnit = $state('lbs'); // 'lbs' or 'kg'
-
-  // Helper function to convert pounds to kilograms for display
-  function convertWeight(weightInLbs) {
-    if (weightUnit === 'kg') {
-      return Math.round(weightInLbs * 0.453592 * 10) / 10; // Convert and round to 1 decimal place
-    }
-    return weightInLbs;
-  }
-
-  // Helper function to get the current unit label
-  function getUnitLabel() {
-    return weightUnit === 'kg' ? 'kg' : 'lbs';
-  }
 
   // Derived state
   let currentExerciseData = $derived(selectedExerciseName ? exercises[selectedExerciseName] : null);
@@ -298,16 +286,16 @@
         exercises[selectedExerciseName].currentPhaseName = nextPhaseName;
         exercises[selectedExerciseName].currentSessionIndex = 0;
         exercises[selectedExerciseName].repsCompleted = Array(nextPhase.sets).fill('');
-        completionMessage = `Phase "${currentExerciseData.currentPhaseName}" completed for ${selectedExerciseName}! Moving to "${nextPhaseName}". Your new max weight is ${convertWeight(newMaxWeight)} ${getUnitLabel()}.`;
+        completionMessage = `Phase "${currentExerciseData.currentPhaseName}" completed for ${selectedExerciseName}! Moving to "${nextPhaseName}". Your new max weight is ${convertWeight(newMaxWeight, weightUnit)} ${getUnitLabel(weightUnit)}.`;
       } else {
         // All phases completed - restart the current (final) phase
         exercises[selectedExerciseName].currentSessionIndex = 0;
         exercises[selectedExerciseName].repsCompleted = Array(currentPhase.sets).fill('');
-        completionMessage = `Congratulations! All phases completed for ${selectedExerciseName}! Your final max weight is ${convertWeight(newMaxWeight)} ${getUnitLabel()}. Restarting "${currentExerciseData.currentPhaseName}".`;
+        completionMessage = `Congratulations! All phases completed for ${selectedExerciseName}! Your final max weight is ${convertWeight(newMaxWeight, weightUnit)} ${getUnitLabel(weightUnit)}. Restarting "${currentExerciseData.currentPhaseName}".`;
       }
       showCompletionMessage = true;
     } else {
-      completionMessage = `Session ${exercises[selectedExerciseName].currentSessionIndex + 1} completed for ${selectedExerciseName}! Your new max weight for the next session is ${convertWeight(newMaxWeight)} ${getUnitLabel()}.`;
+      completionMessage = `Session ${exercises[selectedExerciseName].currentSessionIndex + 1} completed for ${selectedExerciseName}! Your new max weight for the next session is ${convertWeight(newMaxWeight, weightUnit)} ${getUnitLabel(weightUnit)}.`;
       showCompletionMessage = true;
       exercises[selectedExerciseName].currentSessionIndex += 1; // Move to the next session
       exercises[selectedExerciseName].repsCompleted = Array(currentPhase.sets).fill('');
@@ -439,7 +427,7 @@
           <input
             type="number"
             bind:value={newExerciseMaxWeight}
-            placeholder="Initial Max Weight ({getUnitLabel()})"
+            placeholder="Initial Max Weight ({getUnitLabel(weightUnit)})"
             class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
           />
           {@render actionButton(
@@ -497,7 +485,7 @@
         {#if isPhaseDetailsExpanded}
           <p class="text-lg text-gray-300 text-center mb-4">
             Session {currentExerciseData.currentSessionIndex + 1} of {currentPhase.sessions}, max weight
-            <span class="text-yellow-400">{convertWeight(currentExerciseData.maxWeight)} {getUnitLabel()}</span>
+            <span class="text-yellow-400">{convertWeight(currentExerciseData.maxWeight, weightUnit)} {getUnitLabel(weightUnit)}</span>
           </p>
 
           <!-- Phase Details -->
@@ -515,7 +503,7 @@
               <p>Percentages of Max:</p>
               <ul class="list-disc list-inside ml-4">
                 {#each currentPhase.percentages as pct, index}
-                  <li>Set {index + 1}: {pct}% (Target: {convertWeight(targetWeights[index])} {getUnitLabel()})</li>
+                  <li>Set {index + 1}: {pct}% (Target: {convertWeight(targetWeights[index], weightUnit)} {getUnitLabel(weightUnit)})</li>
                 {/each}
               </ul>
             </div>
@@ -544,7 +532,7 @@
               <label for="set-{index}" class="text-lg text-gray-200">
                 Set {index + 1} ({currentExerciseData.currentPhaseName === 'Peak Phase'
                   ? currentPhase.repsPerSet[index]
-                  : currentPhase.repsPerSet} reps @ {convertWeight(targetWeights[index])} {getUnitLabel()})
+                  : currentPhase.repsPerSet} reps @ {convertWeight(targetWeights[index], weightUnit)} {getUnitLabel(weightUnit)})
               </label>
               {#if index === currentPhase.sets - 1}
                 <input
