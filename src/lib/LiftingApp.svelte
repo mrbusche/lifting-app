@@ -268,10 +268,13 @@
         exercises[selectedExerciseName].repsCompleted = Array(nextPhase.sets).fill('');
         completionMessage = `Phase "${currentExerciseData.currentPhaseName}" completed for ${selectedExerciseName}! Moving to "${nextPhaseName}". Your new max weight is ${newMaxWeight} lbs.`;
       } else {
-        // All phases completed - restart the current (final) phase
+        // All phases completed - restart from Base Phase
+        const firstPhaseName = phaseNames[0];
+        const firstPhase = phases[firstPhaseName];
+        exercises[selectedExerciseName].currentPhaseName = firstPhaseName;
         exercises[selectedExerciseName].currentSessionIndex = 0;
-        exercises[selectedExerciseName].repsCompleted = Array(currentPhase.sets).fill('');
-        completionMessage = `Congratulations! All phases completed for ${selectedExerciseName}! Your final max weight is ${newMaxWeight} lbs. Restarting "${currentExerciseData.currentPhaseName}".`;
+        exercises[selectedExerciseName].repsCompleted = Array(firstPhase.sets).fill('');
+        completionMessage = `Congratulations! All phases completed for ${selectedExerciseName}! Your final max weight is ${newMaxWeight} lbs. Restarting from "${firstPhaseName}".`;
       }
       showCompletionMessage = true;
     } else {
