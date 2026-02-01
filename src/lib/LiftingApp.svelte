@@ -65,7 +65,7 @@
   }
 
   // Calculate equivalent reps using Brzycki Formula
-  // Formula: 1RM = weight / (1.0278 - 0.0278 × reps)
+  // Formula: 1RM = weight / (1.0278 - 0.0278 * reps)
   // Rearranged: reps = (1 - weight/1RM) / 0.0278
   function calculateEquivalentReps(targetWeight, maxDumbbellWeight, oneRepMax) {
     if (targetWeight <= maxDumbbellWeight) return null; // No need for equivalent if within range
@@ -130,7 +130,7 @@
             if (!Array.isArray(exercise.history)) {
               exercise.history = [];
             }
-            // Initialize maxDumbbellWeight if it doesn't exist (default: 52.5 lbs)
+            // Initialize maxDumbbellWeight if it doesn't exist
             if (exercise.maxDumbbellWeight === undefined) {
               exercise.maxDumbbellWeight = DEFAULT_MAX_DUMBBELL_WEIGHT;
             }
