@@ -1,4 +1,7 @@
 <script module>
+  // Default max dumbbell weight for adjustable dumbbells
+  const DEFAULT_MAX_DUMBBELL_WEIGHT = 52.5;
+
   // Define the structure and rules for each lifting phase
   const phases = {
     'Base Phase': {
@@ -81,7 +84,7 @@
   let selectedExerciseName = $state(null);
   let newExerciseName = $state('');
   let newExerciseMaxWeight = $state('');
-  let newMaxDumbbellWeight = $state('52.5');
+  let newMaxDumbbellWeight = $state(String(DEFAULT_MAX_DUMBBELL_WEIGHT));
   let completionMessage = $state('');
   let showCompletionMessage = $state(false);
   let isManageExercisesExpanded = $state(true);
@@ -129,7 +132,7 @@
             }
             // Initialize maxDumbbellWeight if it doesn't exist (default: 52.5 lbs)
             if (exercise.maxDumbbellWeight === undefined) {
-              exercise.maxDumbbellWeight = 52.5;
+              exercise.maxDumbbellWeight = DEFAULT_MAX_DUMBBELL_WEIGHT;
             }
           }
           exercises = parsedExercises;
@@ -212,7 +215,7 @@
     selectedExerciseName = newExerciseName.trim();
     newExerciseName = '';
     newExerciseMaxWeight = '';
-    newMaxDumbbellWeight = '52.5'; // Reset to default
+    newMaxDumbbellWeight = String(DEFAULT_MAX_DUMBBELL_WEIGHT); // Reset to default
     completionMessage = 'Exercise added successfully!';
     showCompletionMessage = true;
   }
@@ -440,7 +443,7 @@
               'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 w-full sm:w-auto',
             )}
           </div>
-          <p class="text-sm text-gray-400 text-center">Max dumbbell weight is typically 52.5 lbs for adjustable dumbbells</p>
+          <p class="text-sm text-gray-400 text-center">Max dumbbell weight is typically {DEFAULT_MAX_DUMBBELL_WEIGHT} lbs for adjustable dumbbells</p>
         </div>
       {/if}
 
