@@ -66,12 +66,13 @@
 
   // Calculate equivalent reps using Brzycki Formula
   // Formula: 1RM = weight / (1.0278 - 0.0278 * reps)
-  // Rearranged: reps = (1 - weight/1RM) / 0.0278
+  // Rearranged: reps = (1.0278 - weight/1RM) / 0.0278
   function calculateEquivalentReps(targetWeight, maxDumbbellWeight, oneRepMax) {
     if (targetWeight <= maxDumbbellWeight) return null; // No need for equivalent if within range
     if (maxDumbbellWeight >= oneRepMax) return null; // Invalid: can't calculate meaningful reps
     // Calculate what reps at maxDumbbellWeight would equal the target weight's 1RM percentage
-    const reps = (1 - maxDumbbellWeight / oneRepMax) / 0.0278;
+    const reps = (1.0278 - maxDumbbellWeight / oneRepMax) / 0.0278;
+    if (reps < 1) return null; // Invalid: result doesn't make physical sense
     return Math.round(reps);
   }
 </script>
