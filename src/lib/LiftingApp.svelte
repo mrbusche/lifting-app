@@ -1,4 +1,7 @@
 <script module>
+  // Default max dumbbell weight for adjustable dumbbells
+  const DEFAULT_MAX_DUMBBELL_WEIGHT = 52.5;
+
   // Define the structure and rules for each lifting phase
   const phases = {
     'Base Phase': {
@@ -60,6 +63,26 @@
     // For all other weights, round to nearest 5 pounds
     return Math.round(weight / 5) * 5;
   }
+
+  // Calculate equivalent reps using Brzycki Formula
+  // Formula: 1RM = weight / (1.0278 - 0.0278 * reps)
+  // Given: prescribed reps at target weight, find equivalent reps at maxDumbbellWeight
+  function calculateEquivalentReps(targetWeight, maxDumbbellWeight, oneRepMax, prescribedReps) {
+    if (!maxDumbbellWeight || maxDumbbellWeight <= 0) return null; // Not set or invalid
+    if (targetWeight <= maxDumbbellWeight) return null; // No need for equivalent if within range
+    if (maxDumbbellWeight >= oneRepMax) return null; // Invalid: can't calculate meaningful reps
+    
+    // Step 1: Calculate the implied 1RM from doing prescribedReps at targetWeight
+    const impliedOneRM = targetWeight / (1.0278 - 0.0278 * prescribedReps);
+    
+    // Step 2: Calculate how many reps at maxDumbbellWeight would give the same 1RM
+    // impliedOneRM = maxDumbbellWeight / (1.0278 - 0.0278 * reps)
+    // Solving for reps: reps = (1.0278 - maxDumbbellWeight / impliedOneRM) / 0.0278
+    const reps = (1.0278 - maxDumbbellWeight / impliedOneRM) / 0.0278;
+    
+    if (reps < 1) return null; // Invalid: result doesn't make physical sense
+    return Math.round(reps);
+  }
 </script>
 
 <script>
@@ -71,6 +94,7 @@
   let selectedExerciseName = $state(null);
   let newExerciseName = $state('');
   let newExerciseMaxWeight = $state('');
+  let newMaxDumbbellWeight = $state('0');
   let completionMessage = $state('');
   let showCompletionMessage = $state(false);
   let isManageExercisesExpanded = $state(true);
@@ -115,6 +139,10 @@
             // Initialize history array if it doesn't exist
             if (!Array.isArray(exercise.history)) {
               exercise.history = [];
+            }
+            // Initialize maxDumbbellWeight if it doesn't exist (0 means not set)
+            if (exercise.maxDumbbellWeight === undefined) {
+              exercise.maxDumbbellWeight = 0;
             }
           }
           exercises = parsedExercises;
@@ -162,6 +190,7 @@
   // Function to handle adding a new exercise
   function handleAddExercise() {
     const weight = parseFloat(newExerciseMaxWeight);
+    const maxDumbbell = parseFloat(newMaxDumbbellWeight);
     if (!newExerciseName.trim()) {
       completionMessage = 'Please enter a name for the exercise.';
       showCompletionMessage = true;
@@ -169,6 +198,11 @@
     }
     if (isNaN(weight) || weight <= 0) {
       completionMessage = 'Please enter a valid positive number for the max weight.';
+      showCompletionMessage = true;
+      return;
+    }
+    if (isNaN(maxDumbbell) || maxDumbbell < 0) {
+      completionMessage = 'Please enter a valid number (0 or greater) for the max dumbbell weight.';
       showCompletionMessage = true;
       return;
     }
@@ -180,6 +214,7 @@
 
     const newExerciseData = {
       maxWeight: weight,
+      maxDumbbellWeight: maxDumbbell,
       currentPhaseName: 'Base Phase',
       currentSessionIndex: 0,
       repsCompleted: Array(phases['Base Phase'].sets).fill(''), // Initialize reps for the new exercise
@@ -190,6 +225,7 @@
     selectedExerciseName = newExerciseName.trim();
     newExerciseName = '';
     newExerciseMaxWeight = '';
+    newMaxDumbbellWeight = '0'; // Reset to 0 (not set)
     completionMessage = 'Exercise added successfully!';
     showCompletionMessage = true;
   }
@@ -390,24 +426,37 @@
 
       <!-- Add New Exercise (Collapsible) -->
       {#if isManageExercisesExpanded}
-        <div class="flex flex-col sm:flex-row gap-4 mb-6 items-center justify-center">
-          <input
-            type="text"
-            bind:value={newExerciseName}
-            placeholder="New Exercise Name (e.g., Bench Press)"
-            class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/2"
-          />
-          <input
-            type="number"
-            bind:value={newExerciseMaxWeight}
-            placeholder="Initial Max Weight (lbs)"
-            class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
-          />
-          {@render actionButton(
-            'Add Exercise',
-            handleAddExercise,
-            'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 w-full sm:w-auto',
-          )}
+        <div class="flex flex-col gap-4 mb-6">
+          <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+            <input
+              type="text"
+              bind:value={newExerciseName}
+              placeholder="New Exercise Name (e.g., Bench Press)"
+              class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/2"
+            />
+            <input
+              type="number"
+              bind:value={newExerciseMaxWeight}
+              placeholder="Initial Max Weight (lbs)"
+              class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
+            />
+            <input
+              type="number"
+              step="0.5"
+              bind:value={newMaxDumbbellWeight}
+              placeholder="Max Dumbbell (lbs)"
+              class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
+            />
+            {@render actionButton(
+              'Add Exercise',
+              handleAddExercise,
+              'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 w-full sm:w-auto',
+            )}
+          </div>
+          <p class="text-sm text-gray-400 text-center">
+            Max dumbbell weight is typically {DEFAULT_MAX_DUMBBELL_WEIGHT} lbs for adjustable dumbbells. Set to 0 to disable
+            equivalent reps, or enter your max weight to see equivalent reps when target weights exceed it.
+          </p>
         </div>
       {/if}
 
@@ -461,6 +510,19 @@
             <span class="text-yellow-400">{currentExerciseData.maxWeight} lbs</span>
           </p>
 
+          <!-- Max Dumbbell Weight Setting -->
+          <div class="mb-4 flex flex-row items-center justify-center gap-2">
+            <label for="max-dumbbell" class="text-gray-300">Max Dumbbell Weight:</label>
+            <input
+              id="max-dumbbell"
+              type="number"
+              step="0.5"
+              bind:value={currentExerciseData.maxDumbbellWeight}
+              class="p-2 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-24 text-center"
+            />
+            <span class="text-gray-300">lbs</span>
+          </div>
+
           <!-- Phase Details -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-200">
             <div>
@@ -476,7 +538,25 @@
               <p>Percentages of Max:</p>
               <ul class="list-disc list-inside ml-4">
                 {#each currentPhase.percentages as pct, index}
-                  <li>Set {index + 1}: {pct}% (Target: {targetWeights[index]} lbs)</li>
+                  {@const prescribedReps =
+                    currentExerciseData.currentPhaseName === 'Peak Phase'
+                      ? currentPhase.repsPerSet[index]
+                      : currentPhase.repsPerSet}
+                  {@const equivalentReps = calculateEquivalentReps(
+                    targetWeights[index],
+                    currentExerciseData.maxDumbbellWeight,
+                    currentExerciseData.maxWeight,
+                    prescribedReps,
+                  )}
+                  <li>
+                    Set {index + 1}: {pct}% (Target: {targetWeights[index]} lbs)
+                    {#if equivalentReps !== null}
+                      <br />
+                      <span class="text-cyan-400 ml-6">
+                        → {equivalentReps} reps @ {currentExerciseData.maxDumbbellWeight} lbs (equivalent)
+                      </span>
+                    {/if}
+                  </li>
                 {/each}
               </ul>
             </div>
@@ -501,29 +581,46 @@
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {#each Array(currentPhase.sets) as _, index}
-            <div class="flex flex-row items-center justify-start gap-4">
-              <label for="set-{index}" class="text-lg text-gray-200">
-                Set {index + 1} ({currentExerciseData.currentPhaseName === 'Peak Phase'
-                  ? currentPhase.repsPerSet[index]
-                  : currentPhase.repsPerSet} reps @ {targetWeights[index]} lbs)
-              </label>
-              {#if index === currentPhase.sets - 1}
-                <input
-                  id="set-{index}"
-                  type="number"
-                  bind:value={currentExerciseData.repsCompleted[index]}
-                  placeholder="Reps done"
-                  class="p-2 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 w-24 text-center"
-                />
-              {:else}
-                <div class="flex items-center justify-center h-10">
+            {@const prescribedReps =
+              currentExerciseData.currentPhaseName === 'Peak Phase'
+                ? currentPhase.repsPerSet[index]
+                : currentPhase.repsPerSet}
+            {@const equivalentReps = calculateEquivalentReps(
+              targetWeights[index],
+              currentExerciseData.maxDumbbellWeight,
+              currentExerciseData.maxWeight,
+              prescribedReps,
+            )}
+            <div class="flex flex-col gap-1">
+              <div class="flex flex-row items-center justify-start gap-4">
+                <label for="set-{index}" class="text-lg text-gray-200">
+                  Set {index + 1} ({currentExerciseData.currentPhaseName === 'Peak Phase'
+                    ? currentPhase.repsPerSet[index]
+                    : currentPhase.repsPerSet} reps @ {targetWeights[index]} lbs)
+                </label>
+                {#if index === currentPhase.sets - 1}
                   <input
                     id="set-{index}"
-                    type="checkbox"
-                    bind:checked={currentExerciseData.repsCompleted[index]}
-                    class="w-6 h-6 rounded bg-gray-600 border-gray-500 text-green-500 focus:ring-green-500 cursor-pointer"
+                    type="number"
+                    bind:value={currentExerciseData.repsCompleted[index]}
+                    placeholder="Reps done"
+                    class="p-2 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 w-24 text-center"
                   />
-                </div>
+                {:else}
+                  <div class="flex items-center justify-center h-10">
+                    <input
+                      id="set-{index}"
+                      type="checkbox"
+                      bind:checked={currentExerciseData.repsCompleted[index]}
+                      class="w-6 h-6 rounded bg-gray-600 border-gray-500 text-green-500 focus:ring-green-500 cursor-pointer"
+                    />
+                  </div>
+                {/if}
+              </div>
+              {#if equivalentReps !== null}
+                <p class="text-sm text-cyan-400 ml-0">
+                  Use {currentExerciseData.maxDumbbellWeight} lbs × {equivalentReps} reps
+                </p>
               {/if}
             </div>
           {/each}
