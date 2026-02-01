@@ -446,7 +446,7 @@
           </div>
           <p class="text-sm text-gray-400 text-center">
             Max dumbbell weight is typically {DEFAULT_MAX_DUMBBELL_WEIGHT} lbs for adjustable dumbbells. When target weights exceed
-            this, equivalent rep ranges will be suggested.
+            this, equivalent reps will be calculated and displayed.
           </p>
         </div>
       {/if}
