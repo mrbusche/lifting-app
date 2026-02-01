@@ -68,6 +68,7 @@
   // Formula: 1RM = weight / (1.0278 - 0.0278 * reps)
   // Rearranged: reps = (1.0278 - weight/1RM) / 0.0278
   function calculateEquivalentReps(targetWeight, maxDumbbellWeight, oneRepMax) {
+    if (!maxDumbbellWeight || maxDumbbellWeight <= 0) return null; // Not set or invalid
     if (targetWeight <= maxDumbbellWeight) return null; // No need for equivalent if within range
     if (maxDumbbellWeight >= oneRepMax) return null; // Invalid: can't calculate meaningful reps
     // Calculate what reps at maxDumbbellWeight would equal the target weight's 1RM percentage
@@ -86,7 +87,7 @@
   let selectedExerciseName = $state(null);
   let newExerciseName = $state('');
   let newExerciseMaxWeight = $state('');
-  let newMaxDumbbellWeight = $state(String(DEFAULT_MAX_DUMBBELL_WEIGHT));
+  let newMaxDumbbellWeight = $state('0');
   let completionMessage = $state('');
   let showCompletionMessage = $state(false);
   let isManageExercisesExpanded = $state(true);
@@ -132,9 +133,9 @@
             if (!Array.isArray(exercise.history)) {
               exercise.history = [];
             }
-            // Initialize maxDumbbellWeight if it doesn't exist
+            // Initialize maxDumbbellWeight if it doesn't exist (0 means not set)
             if (exercise.maxDumbbellWeight === undefined) {
-              exercise.maxDumbbellWeight = DEFAULT_MAX_DUMBBELL_WEIGHT;
+              exercise.maxDumbbellWeight = 0;
             }
           }
           exercises = parsedExercises;
@@ -193,8 +194,8 @@
       showCompletionMessage = true;
       return;
     }
-    if (isNaN(maxDumbbell) || maxDumbbell <= 0) {
-      completionMessage = 'Please enter a valid positive number for the max dumbbell weight.';
+    if (isNaN(maxDumbbell) || maxDumbbell < 0) {
+      completionMessage = 'Please enter a valid number (0 or greater) for the max dumbbell weight.';
       showCompletionMessage = true;
       return;
     }
@@ -217,7 +218,7 @@
     selectedExerciseName = newExerciseName.trim();
     newExerciseName = '';
     newExerciseMaxWeight = '';
-    newMaxDumbbellWeight = String(DEFAULT_MAX_DUMBBELL_WEIGHT); // Reset to default
+    newMaxDumbbellWeight = '0'; // Reset to 0 (not set)
     completionMessage = 'Exercise added successfully!';
     showCompletionMessage = true;
   }
@@ -446,8 +447,8 @@
             )}
           </div>
           <p class="text-sm text-gray-400 text-center">
-            Max dumbbell weight is typically {DEFAULT_MAX_DUMBBELL_WEIGHT} lbs for adjustable dumbbells. When target weights exceed
-            this, equivalent reps will be calculated and displayed.
+            Max dumbbell weight is typically {DEFAULT_MAX_DUMBBELL_WEIGHT} lbs for adjustable dumbbells. Set to 0 to disable
+            equivalent reps, or enter your max weight to see equivalent reps when target weights exceed it.
           </p>
         </div>
       {/if}
