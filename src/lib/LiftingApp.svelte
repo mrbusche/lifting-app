@@ -503,7 +503,7 @@
           </p>
 
           <!-- Max Dumbbell Weight Setting -->
-          <div class="mb-4 flex flex-col sm:flex-row items-center justify-center gap-2">
+          <div class="mb-4 flex flex-row items-center justify-center gap-2">
             <label for="max-dumbbell" class="text-gray-300">Max Dumbbell Weight:</label>
             <input
               id="max-dumbbell"
