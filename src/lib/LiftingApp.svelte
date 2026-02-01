@@ -66,13 +66,20 @@
 
   // Calculate equivalent reps using Brzycki Formula
   // Formula: 1RM = weight / (1.0278 - 0.0278 * reps)
-  // We want: how many reps at maxDumbbellWeight equals the same %1RM as targetWeight
-  function calculateEquivalentReps(targetWeight, maxDumbbellWeight, oneRepMax) {
+  // Given: prescribed reps at target weight, find equivalent reps at maxDumbbellWeight
+  function calculateEquivalentReps(targetWeight, maxDumbbellWeight, oneRepMax, prescribedReps) {
     if (!maxDumbbellWeight || maxDumbbellWeight <= 0) return null; // Not set or invalid
     if (targetWeight <= maxDumbbellWeight) return null; // No need for equivalent if within range
     if (maxDumbbellWeight >= oneRepMax) return null; // Invalid: can't calculate meaningful reps
-    // Calculate equivalent reps: reps = (1.0278 - maxDumbbellWeight/targetWeight) / 0.0278
-    const reps = (1.0278 - maxDumbbellWeight / targetWeight) / 0.0278;
+    
+    // Step 1: Calculate the implied 1RM from doing prescribedReps at targetWeight
+    const impliedOneRM = targetWeight / (1.0278 - 0.0278 * prescribedReps);
+    
+    // Step 2: Calculate how many reps at maxDumbbellWeight would give the same 1RM
+    // impliedOneRM = maxDumbbellWeight / (1.0278 - 0.0278 * reps)
+    // Solving for reps: reps = (1.0278 - maxDumbbellWeight / impliedOneRM) / 0.0278
+    const reps = (1.0278 - maxDumbbellWeight / impliedOneRM) / 0.0278;
+    
     if (reps < 1) return null; // Invalid: result doesn't make physical sense
     return Math.round(reps);
   }
@@ -531,10 +538,15 @@
               <p>Percentages of Max:</p>
               <ul class="list-disc list-inside ml-4">
                 {#each currentPhase.percentages as pct, index}
+                  {@const prescribedReps =
+                    currentExerciseData.currentPhaseName === 'Peak Phase'
+                      ? currentPhase.repsPerSet[index]
+                      : currentPhase.repsPerSet}
                   {@const equivalentReps = calculateEquivalentReps(
                     targetWeights[index],
                     currentExerciseData.maxDumbbellWeight,
                     currentExerciseData.maxWeight,
+                    prescribedReps,
                   )}
                   <li>
                     Set {index + 1}: {pct}% (Target: {targetWeights[index]} lbs)
@@ -569,10 +581,15 @@
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {#each Array(currentPhase.sets) as _, index}
+            {@const prescribedReps =
+              currentExerciseData.currentPhaseName === 'Peak Phase'
+                ? currentPhase.repsPerSet[index]
+                : currentPhase.repsPerSet}
             {@const equivalentReps = calculateEquivalentReps(
               targetWeights[index],
               currentExerciseData.maxDumbbellWeight,
               currentExerciseData.maxWeight,
+              prescribedReps,
             )}
             <div class="flex flex-col gap-1">
               <div class="flex flex-row items-center justify-start gap-4">
