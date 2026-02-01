@@ -69,6 +69,7 @@
   // Rearranged: reps = (1 - weight/1RM) / 0.0278
   function calculateEquivalentReps(targetWeight, maxDumbbellWeight, oneRepMax) {
     if (targetWeight <= maxDumbbellWeight) return null; // No need for equivalent if within range
+    if (maxDumbbellWeight >= oneRepMax) return null; // Invalid: can't calculate meaningful reps
     // Calculate what reps at maxDumbbellWeight would equal the target weight's 1RM percentage
     const reps = (1 - maxDumbbellWeight / oneRepMax) / 0.0278;
     return Math.round(reps);
@@ -443,7 +444,10 @@
               'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 w-full sm:w-auto',
             )}
           </div>
-          <p class="text-sm text-gray-400 text-center">Max dumbbell weight is typically {DEFAULT_MAX_DUMBBELL_WEIGHT} lbs for adjustable dumbbells</p>
+          <p class="text-sm text-gray-400 text-center">
+            Max dumbbell weight is typically {DEFAULT_MAX_DUMBBELL_WEIGHT} lbs for adjustable dumbbells. When target weights exceed
+            this, equivalent rep ranges will be suggested.
+          </p>
         </div>
       {/if}
 
