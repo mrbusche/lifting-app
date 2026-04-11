@@ -2,31 +2,26 @@
   "name": "lifting-program-tracker-svelte",
   "version": "0.1.27",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "prettier --check .",
-    "prettier:fix": "prettier --write ."
+    "lint": "oxlint",
+    "prettier:fix": "oxfmt"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "7.0.1",
     "@sveltejs/kit": "2.57.1",
     "@sveltejs/vite-plugin-svelte": "7.0.0",
     "@tailwindcss/vite": "4.2.2",
-    "prettier": "3.8.2",
-    "prettier-plugin-svelte": "3.5.1",
+    "oxfmt": "0.44.0",
+    "oxlint": "1.59.0",
     "svelte": "5.55.3",
     "svelte-check": "4.4.6",
     "tailwindcss": "4.2.2",
     "tslib": "2.8.1",
     "typescript": "6.0.2",
     "vite": "8.0.8"
-  },
-  "overrides": {
-    "@tailwindcss/vite": {
-      "vite": "^8"
-    }
-  },
-  "type": "module"
+  }
 }
