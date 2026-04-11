@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "oxlint",
-    "prettier:fix": "oxfmt"
+    "fmt": "oxfmt"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "7.0.1",
