@@ -56,7 +56,7 @@
     {:else}
       <div class="space-y-8">
         {#each Object.entries(exercises) as [exerciseName, exerciseData]}
-          {@const sortedHistory = getSortedHistory(exerciseData)}
+          {const sortedHistory = $derived(getSortedHistory(exerciseData))}
           {#if sortedHistory.length > 0}
             <div class="bg-gray-700 rounded-lg p-6 shadow-lg">
               <h2 class="text-2xl font-bold text-yellow-300 mb-4">{exerciseName}</h2>
