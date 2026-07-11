@@ -1,6 +1,6 @@
 <script>
-  import { onMount } from 'svelte';
   import { browser } from '$app/environment';
+  import { onMount } from 'svelte';
 
   let exercises = $state({});
   let hasAnyHistory = $state(false);
@@ -32,16 +32,16 @@
 </script>
 
 <div
-  class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-pink-900 text-white font-inter flex flex-col items-center p-4 sm:p-6 md:p-8"
+  class="font-inter flex min-h-screen flex-col items-center bg-gradient-to-br from-gray-900 via-purple-900 to-pink-900 p-4 text-white sm:p-6 md:p-8"
 >
-  <div class="bg-gray-800 rounded-xl shadow-2xl p-6 sm:p-8 md:p-10 w-full max-w-4xl">
+  <div class="w-full max-w-4xl rounded-xl bg-gray-800 p-6 shadow-2xl sm:p-8 md:p-10">
     <div class="mb-8">
-      <h1 class="text-4xl sm:text-5xl font-bold text-yellow-300 text-center mb-6">Workout History</h1>
+      <h1 class="mb-6 text-center text-4xl font-bold text-yellow-300 sm:text-5xl">Workout History</h1>
 
-      <div class="flex justify-center mb-6">
+      <div class="mb-6 flex justify-center">
         <a
           href="/"
-          class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+          class="transform rounded-lg bg-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition duration-300 ease-in-out hover:scale-105 hover:bg-purple-700"
         >
           ← Back to Tracker
         </a>
@@ -49,8 +49,8 @@
     </div>
 
     {#if !hasAnyHistory}
-      <div class="text-center py-12">
-        <p class="text-xl text-gray-300 mb-4">No history yet. Complete workouts to see your progress here!</p>
+      <div class="py-12 text-center">
+        <p class="mb-4 text-xl text-gray-300">No history yet. Complete workouts to see your progress here!</p>
         <p class="text-gray-400">Your workout history will appear once you complete sessions and your max weight changes.</p>
       </div>
     {:else}
@@ -58,22 +58,22 @@
         {#each Object.entries(exercises) as [exerciseName, exerciseData]}
           {const sortedHistory = $derived(getSortedHistory(exerciseData))}
           {#if sortedHistory.length > 0}
-            <div class="bg-gray-700 rounded-lg p-6 shadow-lg">
-              <h2 class="text-2xl font-bold text-yellow-300 mb-4">{exerciseName}</h2>
+            <div class="rounded-lg bg-gray-700 p-6 shadow-lg">
+              <h2 class="mb-4 text-2xl font-bold text-yellow-300">{exerciseName}</h2>
 
               <div class="overflow-x-auto">
                 <table class="w-full">
                   <thead>
                     <tr class="border-b border-gray-600">
-                      <th class="text-left py-3 px-4 text-purple-300 font-semibold">Date</th>
-                      <th class="text-left py-3 px-4 text-purple-300 font-semibold">Max Weight (lbs)</th>
+                      <th class="px-4 py-3 text-left font-semibold text-purple-300">Date</th>
+                      <th class="px-4 py-3 text-left font-semibold text-purple-300">Max Weight (lbs)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {#each sortedHistory as entry}
-                      <tr class="border-b border-gray-600 hover:bg-gray-600 transition">
-                        <td class="py-3 px-4 text-gray-200">{entry.date}</td>
-                        <td class="py-3 px-4 text-gray-200 font-semibold">{entry.maxWeight}</td>
+                      <tr class="border-b border-gray-600 transition hover:bg-gray-600">
+                        <td class="px-4 py-3 text-gray-200">{entry.date}</td>
+                        <td class="px-4 py-3 font-semibold text-gray-200">{entry.maxWeight}</td>
                       </tr>
                     {/each}
                   </tbody>
