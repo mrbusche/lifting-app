@@ -86,8 +86,8 @@
 </script>
 
 <script>
-  import { onMount } from 'svelte';
   import { browser } from '$app/environment'; // Import 'browser' from SvelteKit's environment module
+  import { onMount } from 'svelte';
 
   // State variables
   let exercises = $state({});
@@ -382,10 +382,10 @@
   titleClass = 'text-2xl',
 )}
   <div class="flex items-center justify-between">
-    <h2 class="{titleClass} font-bold {colorClass} text-center flex-1">{title}</h2>
+    <h2 class="{titleClass} font-bold {colorClass} flex-1 text-center">{title}</h2>
     <button
       onclick={onToggle}
-      class="{colorClass} {hoverClass} font-bold text-2xl focus:outline-none"
+      class="{colorClass} {hoverClass} text-2xl font-bold focus:outline-none"
       aria-label={expanded ? 'Collapse' : 'Expand'}
     >
       {expanded ? '−' : '+'}
@@ -396,56 +396,56 @@
 {#snippet actionButton(label, onclick, classes)}
   <button
     {onclick}
-    class="px-6 py-3 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 {classes}"
+    class="transform rounded-lg px-6 py-3 font-semibold text-white shadow-lg transition duration-300 ease-in-out hover:scale-105 {classes}"
   >
     {label}
   </button>
 {/snippet}
 
-<div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-700 text-white font-inter flex flex-col items-center p-4 sm:p-6 md:p-8">
-  <div class="bg-gray-800 rounded-xl shadow-2xl p-6 sm:p-8 md:p-10 w-full max-w-4xl flex flex-col items-center">
+<div class="font-inter flex min-h-screen flex-col items-center bg-gradient-to-br from-gray-900 to-gray-700 p-4 text-white sm:p-6 md:p-8">
+  <div class="flex w-full max-w-4xl flex-col items-center rounded-xl bg-gray-800 p-6 shadow-2xl sm:p-8 md:p-10">
     <h1
-      class="text-4xl sm:text-5xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-center"
+      class="mb-6 bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-center text-4xl font-extrabold text-transparent sm:text-5xl"
     >
       Lifting Program Tracker
     </h1>
 
     <!-- Navigation to History -->
-    <div class="mb-6 w-full flex justify-center">
+    <div class="mb-6 flex w-full justify-center">
       <a
         href="/history"
-        class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+        class="transform rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 font-semibold text-white shadow-lg transition duration-300 ease-in-out hover:scale-105 hover:from-purple-700 hover:to-pink-700"
       >
         View Workout History
       </a>
     </div>
 
     <!-- Exercise Management Section -->
-    <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
+    <div class="mb-6 w-full rounded-lg bg-gray-700 p-5 shadow-lg">
       {@render sectionHeader('Manage Exercises', isManageExercisesExpanded, () => (isManageExercisesExpanded = !isManageExercisesExpanded))}
 
       <!-- Add New Exercise (Collapsible) -->
       {#if isManageExercisesExpanded}
-        <div class="flex flex-col gap-4 mb-6">
-          <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+        <div class="mb-6 flex flex-col gap-4">
+          <div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <input
               type="text"
               bind:value={newExerciseName}
               placeholder="New Exercise Name (e.g., Bench Press)"
-              class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/2"
+              class="w-full rounded-lg border border-gray-500 bg-gray-600 p-3 text-white focus:ring-2 focus:ring-yellow-500 focus:outline-none sm:w-1/2"
             />
             <input
               type="number"
               bind:value={newExerciseMaxWeight}
               placeholder="Initial Max Weight (lbs)"
-              class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
+              class="w-full rounded-lg border border-gray-500 bg-gray-600 p-3 text-center text-white focus:ring-2 focus:ring-yellow-500 focus:outline-none sm:w-1/4"
             />
             <input
               type="number"
               step="0.5"
               bind:value={newMaxDumbbellWeight}
               placeholder="Max Dumbbell (lbs)"
-              class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full sm:w-1/4 text-center"
+              class="w-full rounded-lg border border-gray-500 bg-gray-600 p-3 text-center text-white focus:ring-2 focus:ring-yellow-500 focus:outline-none sm:w-1/4"
             />
             {@render actionButton(
               'Add Exercise',
@@ -453,9 +453,9 @@
               'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 w-full sm:w-auto',
             )}
           </div>
-          <p class="text-sm text-gray-400 text-center">
-            Max dumbbell weight is typically {DEFAULT_MAX_DUMBBELL_WEIGHT} lbs for adjustable dumbbells. Set to 0 to disable
-            equivalent reps, or enter your max weight to see equivalent reps when target weights exceed it.
+          <p class="text-center text-sm text-gray-400">
+            Max dumbbell weight is typically {DEFAULT_MAX_DUMBBELL_WEIGHT} lbs for adjustable dumbbells. Set to 0 to disable equivalent reps,
+            or enter your max weight to see equivalent reps when target weights exceed it.
           </p>
         </div>
       {/if}
@@ -463,11 +463,11 @@
       <!-- Select Existing Exercise (Always Visible) -->
       {#if Object.keys(exercises).length > 0}
         <div class="text-center">
-          <label for="exercise-select" class="text-lg text-gray-200 mr-3">Select Exercise:</label>
+          <label for="exercise-select" class="mr-3 text-lg text-gray-200">Select Exercise:</label>
           <select
             id="exercise-select"
             bind:value={selectedExerciseName}
-            class="p-3 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            class="rounded-lg border border-gray-500 bg-gray-600 p-3 text-white focus:ring-2 focus:ring-yellow-500 focus:outline-none"
           >
             <option value={null} disabled>-- Choose an Exercise --</option>
             {#each Object.keys(exercises) as name}
@@ -480,21 +480,21 @@
 
     <!-- Completion Message Display -->
     {#if showCompletionMessage}
-      <div class="bg-blue-600 bg-opacity-30 border border-blue-500 rounded-lg p-4 mb-6 w-full text-center shadow-md relative">
+      <div class="bg-opacity-30 relative mb-6 w-full rounded-lg border border-blue-500 bg-blue-600 p-4 text-center shadow-md">
         <button
           onclick={() => (showCompletionMessage = false)}
-          class="absolute top-2 right-2 text-blue-200 hover:text-white text-xl font-bold transition-colors duration-200"
+          class="absolute top-2 right-2 text-xl font-bold text-blue-200 transition-colors duration-200 hover:text-white"
           aria-label="Close message"
         >
           ×
         </button>
-        <p class="text-lg font-medium pr-8">{completionMessage}</p>
+        <p class="pr-8 text-lg font-medium">{completionMessage}</p>
       </div>
     {/if}
 
     <!-- Main Program Display (after selecting an exercise) -->
     {#if selectedExerciseName && currentExerciseData && currentPhase}
-      <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
+      <div class="mb-6 w-full rounded-lg bg-gray-700 p-5 shadow-lg">
         {@render sectionHeader(
           currentExerciseData.currentPhaseName,
           isPhaseDetailsExpanded,
@@ -505,7 +505,7 @@
         )}
 
         {#if isPhaseDetailsExpanded}
-          <p class="text-lg text-gray-300 text-center mb-4">
+          <p class="mb-4 text-center text-lg text-gray-300">
             Session {currentExerciseData.currentSessionIndex + 1} of {currentPhase.sessions}, max weight
             <span class="text-yellow-400">{currentExerciseData.maxWeight} lbs</span>
           </p>
@@ -518,15 +518,15 @@
               type="number"
               step="0.5"
               bind:value={currentExerciseData.maxDumbbellWeight}
-              class="p-2 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-24 text-center"
+              class="w-24 rounded-lg border border-gray-500 bg-gray-600 p-2 text-center text-white focus:ring-2 focus:ring-yellow-500 focus:outline-none"
             />
             <span class="text-gray-300">lbs</span>
           </div>
 
           <!-- Phase Details -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-200">
+          <div class="grid grid-cols-1 gap-4 text-gray-200 md:grid-cols-2">
             <div>
-              <h3 class="text-xl font-semibold text-pink-400 mb-2">Workout Details:</h3>
+              <h3 class="mb-2 text-xl font-semibold text-pink-400">Workout Details:</h3>
               {#if currentExerciseData.currentPhaseName !== 'Peak Phase'}
                 <p>Sets: {currentPhase.sets}</p>
               {:else}
@@ -536,23 +536,24 @@
                 <p>Reps per Set: {currentPhase.repsPerSet}</p>
               {/if}
               <p>Percentages of Max:</p>
-              <ul class="list-disc list-inside ml-4">
+              <ul class="ml-4 list-inside list-disc">
                 {#each currentPhase.percentages as pct, index}
-                  {const prescribedReps =
-                    $derived(currentExerciseData.currentPhaseName === 'Peak Phase'
-                      ? currentPhase.repsPerSet[index]
-                      : currentPhase.repsPerSet)}
-                  {const equivalentReps = $derived(calculateEquivalentReps(
-                    targetWeights[index],
-                    currentExerciseData.maxDumbbellWeight,
-                    currentExerciseData.maxWeight,
-                    prescribedReps,
-                  ))}
+                  {const prescribedReps = $derived(
+                    currentExerciseData.currentPhaseName === 'Peak Phase' ? currentPhase.repsPerSet[index] : currentPhase.repsPerSet,
+                  )}
+                  {const equivalentReps = $derived(
+                    calculateEquivalentReps(
+                      targetWeights[index],
+                      currentExerciseData.maxDumbbellWeight,
+                      currentExerciseData.maxWeight,
+                      prescribedReps,
+                    ),
+                  )}
                   <li>
                     Set {index + 1}: {pct}% (Target: {targetWeights[index]} lbs)
                     {#if equivalentReps !== null}
                       <br />
-                      <span class="text-cyan-400 ml-6">
+                      <span class="ml-6 text-cyan-400">
                         → {equivalentReps} reps @ {currentExerciseData.maxDumbbellWeight} lbs (equivalent)
                       </span>
                     {/if}
@@ -563,8 +564,8 @@
 
             <!-- Progression Rules -->
             <div>
-              <h3 class="text-xl font-semibold text-pink-400 mb-2">Progression Rules (Based on Last Set):</h3>
-              <ul class="list-disc list-inside ml-4">
+              <h3 class="mb-2 text-xl font-semibold text-pink-400">Progression Rules (Based on Last Set):</h3>
+              <ul class="ml-4 list-inside list-disc">
                 {#each currentPhase.progression as rule, index}
                   <li>{rule.text}</li>
                 {/each}
@@ -575,22 +576,23 @@
       </div>
 
       <!-- Reps Input for Current Session -->
-      <div class="bg-gray-700 rounded-lg p-5 mb-6 w-full shadow-lg">
-        <h3 class="text-2xl font-bold text-green-400 mb-4 text-center">
+      <div class="mb-6 w-full rounded-lg bg-gray-700 p-5 shadow-lg">
+        <h3 class="mb-4 text-center text-2xl font-bold text-green-400">
           Enter Reps Completed for Session {currentExerciseData.currentSessionIndex + 1}
         </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {#each Array(currentPhase.sets) as _, index}
-            {const prescribedReps =
-              $derived(currentExerciseData.currentPhaseName === 'Peak Phase'
-                ? currentPhase.repsPerSet[index]
-                : currentPhase.repsPerSet)}
-            {const equivalentReps = $derived(calculateEquivalentReps(
-              targetWeights[index],
-              currentExerciseData.maxDumbbellWeight,
-              currentExerciseData.maxWeight,
-              prescribedReps,
-            ))}
+            {const prescribedReps = $derived(
+              currentExerciseData.currentPhaseName === 'Peak Phase' ? currentPhase.repsPerSet[index] : currentPhase.repsPerSet,
+            )}
+            {const equivalentReps = $derived(
+              calculateEquivalentReps(
+                targetWeights[index],
+                currentExerciseData.maxDumbbellWeight,
+                currentExerciseData.maxWeight,
+                prescribedReps,
+              ),
+            )}
             <div class="flex flex-col gap-1">
               <div class="flex flex-row items-center justify-start gap-4">
                 <label for="set-{index}" class="text-lg text-gray-200">
@@ -604,21 +606,21 @@
                     type="number"
                     bind:value={currentExerciseData.repsCompleted[index]}
                     placeholder="Reps done"
-                    class="p-2 rounded-lg bg-gray-600 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 w-24 text-center"
+                    class="w-24 rounded-lg border border-gray-500 bg-gray-600 p-2 text-center text-white focus:ring-2 focus:ring-green-500 focus:outline-none"
                   />
                 {:else}
-                  <div class="flex items-center justify-center h-10">
+                  <div class="flex h-10 items-center justify-center">
                     <input
                       id="set-{index}"
                       type="checkbox"
                       bind:checked={currentExerciseData.repsCompleted[index]}
-                      class="w-6 h-6 rounded bg-gray-600 border-gray-500 text-green-500 focus:ring-green-500 cursor-pointer"
+                      class="h-6 w-6 cursor-pointer rounded border-gray-500 bg-gray-600 text-green-500 focus:ring-green-500"
                     />
                   </div>
                 {/if}
               </div>
               {#if equivalentReps !== null}
-                <p class="text-sm text-cyan-400 ml-0">
+                <p class="ml-0 text-sm text-cyan-400">
                   Use {currentExerciseData.maxDumbbellWeight} lbs × {equivalentReps} reps
                 </p>
               {/if}
@@ -642,10 +644,10 @@
     {/if}
 
     <!-- Export/Import/Reset Section -->
-    <div class="bg-gray-700 rounded-lg p-5 w-full shadow-lg">
+    <div class="w-full rounded-lg bg-gray-700 p-5 shadow-lg">
       {@render sectionHeader('Export/Import Exercises', isExportImportExpanded, () => (isExportImportExpanded = !isExportImportExpanded))}
       {#if isExportImportExpanded}
-        <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+        <div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
           {@render actionButton(
             'Export Exercises',
             exportExercises,
@@ -654,7 +656,7 @@
           <input type="file" accept="application/json" onchange={importExercises} class="hidden" id="import-exercises" />
           <label
             for="import-exercises"
-            class="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg hover:from-green-600 hover:to-teal-700 transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto text-center cursor-pointer"
+            class="w-full transform cursor-pointer rounded-lg bg-gradient-to-r from-green-500 to-teal-600 px-6 py-3 text-center font-semibold text-white shadow-lg transition duration-300 ease-in-out hover:scale-105 hover:from-green-600 hover:to-teal-700 sm:w-auto"
           >
             Import Exercises
           </label>

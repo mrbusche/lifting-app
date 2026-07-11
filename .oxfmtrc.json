@@ -9,5 +9,6 @@
   "trailingComma": "all",
   "sortImports": true,
   "sortTailwindcss": true,
+  "svelte": true,
   "sortPackageJson": true
 }
