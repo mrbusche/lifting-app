@@ -22,7 +22,7 @@ jobs:
         run: npm ci --force
 
       - name: Run Formatter
-        run: npm run fmt
+        run: vpr fmt
 
       - name: Check for changes
         run: git diff --exit-code
