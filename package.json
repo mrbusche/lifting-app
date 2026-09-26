@@ -4,11 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
-    "lint": "oxlint",
-    "fmt": "oxfmt"
+    "dev": "vp dev",
+    "build": "vp build",
+    "preview": "vp preview",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "prepare": "vp config"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "7.0.1",
@@ -16,14 +17,19 @@
     "@sveltejs/kit": "2.70.3",
     "@sveltejs/vite-plugin-svelte": "7.3.1",
     "@tailwindcss/vite": "4.3.3",
-    "oxfmt": "0.70.0",
-    "oxlint": "1.85.0",
     "svelte": "5.57.1",
     "svelte-check": "4.7.6",
     "tailwindcss": "4.3.3",
     "tslib": "2.8.1",
     "typescript": "7.0.2",
-    "vite": "8.3.1"
+    "vite-plus": "1.0.0-rc.1"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": "12.1.0",
+      "onFail": "download"
+    }
   },
   "allowScripts": {
     "esbuild": false
