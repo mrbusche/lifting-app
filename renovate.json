@@ -9,7 +9,7 @@
     },
     {
       "matchManagers": ["nvm"],
-      "matchFileNames": [".nvmrc"],
+      "matchFileNames": [".node-version"],
       "enabled": true
     },
     {
