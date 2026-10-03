@@ -3,6 +3,9 @@
   "version": "0.1.27",
   "private": true,
   "type": "module",
+  "imports": {
+    "#lib/*": "./src/lib/*"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
@@ -11,9 +14,9 @@
     "fmt": "oxfmt"
   },
   "devDependencies": {
-    "@sveltejs/adapter-auto": "7.0.1",
-    "@sveltejs/adapter-netlify": "6.0.4",
-    "@sveltejs/kit": "2.70.3",
+    "@sveltejs/adapter-auto": "8.0.0",
+    "@sveltejs/adapter-netlify": "7.0.0",
+    "@sveltejs/kit": "3.0.0",
     "@sveltejs/vite-plugin-svelte": "7.3.1",
     "@tailwindcss/vite": "4.3.3",
     "oxfmt": "0.71.0",

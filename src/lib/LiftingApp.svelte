@@ -86,7 +86,7 @@
 </script>
 
 <script>
-  import { browser } from '$app/environment'; // Import 'browser' from SvelteKit's environment module
+  import { browser } from '$app/env';
   import { onMount } from 'svelte';
 
   // State variables
