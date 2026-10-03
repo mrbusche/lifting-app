@@ -1,4 +1,4 @@
-name: Formatter Fix
+name: Validate PR
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  formatter:
+  Format:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,7 +22,7 @@ jobs:
         run: npm ci --force
 
       - name: Run Formatter
-        run: vpr fmt
+        run: npm run fmt
 
       - name: Check for changes
         run: git diff --exit-code
